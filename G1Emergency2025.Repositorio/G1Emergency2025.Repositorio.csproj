@@ -11,4 +11,8 @@
     <ProjectReference Include="..\G1Emergency2025.Shared\G1Emergency2025.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Repositorios\" />
+  </ItemGroup>
+
 </Project>
