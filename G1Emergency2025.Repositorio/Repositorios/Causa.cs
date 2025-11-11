@@ -19,5 +19,5 @@ namespace G1Emergency2025.BD.Datos.Entity
         [MaxLength(200, ErrorMessage = "Ingrese una causa válida")]
         public required string posibleCausa { get; set; }
 
-    }
+    } ///PEPEEEEEEE
 }
