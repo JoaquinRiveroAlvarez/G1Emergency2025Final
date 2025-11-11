@@ -10,7 +10,7 @@ namespace G1Emergency2025.BD.Datos.Entity
 {
     public class DiagPresuntivo : EntityBase
     {
-
+        //PRUEBA EMILSE
         [Required(ErrorMessage = "El Diagnostico presuntivo es obligatorio.")]
         [MaxLength(100, ErrorMessage = "La cantidad Maxima de caracteres es 100")]
         public required string PosDiagnostico { get; set; }
