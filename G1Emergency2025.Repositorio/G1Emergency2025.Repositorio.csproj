@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Repositorios\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\G1Emergency2025.BD\G1Emergency2025.BD.csproj" />
+    <ProjectReference Include="..\G1Emergency2025.Shared\G1Emergency2025.Shared.csproj" />
+  </ItemGroup>
+
+</Project>
