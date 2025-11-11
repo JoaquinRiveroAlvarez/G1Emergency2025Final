@@ -12,7 +12,6 @@ namespace G1Emergency2025.BD.Datos.Entity
     [Index(nameof(Patente), Name = "Patente_UQ", IsUnique = true)]
     public class Movil : EntityBase
     {
-
         [Required(ErrorMessage = "La disponibilidad es obligatoria.")]
         public DisponibilidadMovil disponibilidadMovil { get; set; } = DisponibilidadMovil.libre;
 

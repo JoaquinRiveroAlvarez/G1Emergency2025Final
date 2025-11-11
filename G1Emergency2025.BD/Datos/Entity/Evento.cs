@@ -14,7 +14,7 @@ namespace G1Emergency2025.BD.Datos.Entity
 
     public class Evento : EntityBase
     {
-
+        //editado Joaquin
         [Required(ErrorMessage = "El código es obligatorio")]
         public required string Codigo { get; set; }
 
