@@ -12,20 +12,23 @@ namespace G1Emergency2025.BD.Datos.Entity
     {
 
         [Required(ErrorMessage = "El Nombre es obligatorio.")]
-        [MaxLength(50, ErrorMessage = "El Nombre no puede exceder los 100 caracteres.")]
-        public required string Nombre { get; set; }
+        [MaxLength(50, ErrorMessage = "El Nombre no puede exceder los 50 caracteres.")]
+        public required string Nombre { get; set; } = string.Empty;
 
-        [MaxLength(50, ErrorMessage = "El DNI no puede exceder los 50 caracteres.")]
-        public required string DNI { get; set; }
+        [MaxLength(20, ErrorMessage = "El DNI no puede exceder los 20 caracteres.")]
+        public required string DNI { get; set; } = string.Empty;
 
-        [MaxLength(100, ErrorMessage = "La dirección no puede exceder los 100 caracteres.")]
-        public string Dirección { get; set; } = string.Empty;
+        [MaxLength(25, ErrorMessage = "El Legajo no puede exceder los 25 caracteres.")]
+        public required string Legajo { get; set; } = string.Empty;
+
+        [MaxLength(50, ErrorMessage = "La dirección no puede exceder los 50 caracteres.")]
+        public string Direccion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El Sexo es obligatorio.")]
-        public required string Sexo { get; set; }
+        public required Sexo Sexo { get; set; }
 
         [Required(ErrorMessage = "La edad es obligatoria.")]
-        [MaxLength(50, ErrorMessage = "La edad no puede exceder los 3 caracteres.")]
+        [MaxLength(3, ErrorMessage = "La edad no puede exceder los 3 caracteres.")]
         public required string Edad { get; set; }
     }
 }

@@ -14,7 +14,9 @@ namespace G1Emergency2025.BD.Datos.Entity
 
     public class Evento : EntityBase
     {
-        //editado Joaquin 8949349 jaaaa
+        [MaxLength(150, ErrorMessage = "La cantidad Maxima de caracteres es 150")]
+        public required string Relato { get; set; }
+
         [Required(ErrorMessage = "El código es obligatorio")]
         public required string Codigo { get; set; }
 
@@ -22,7 +24,7 @@ namespace G1Emergency2025.BD.Datos.Entity
         public required ColorEvento colorEvento { get; set; }
 
         [MaxLength(100, ErrorMessage = "La cantidad Maxima de caracteres es 100")]
-        public string Domicilio { get; set; } = string.Empty;
+        public string Ubicacion { get; set; } = string.Empty;
 
         [MaxLength(30, ErrorMessage = "La cantidad Maxima de caracteres es 30")]
         public string Telefono { get; set; } = string.Empty;

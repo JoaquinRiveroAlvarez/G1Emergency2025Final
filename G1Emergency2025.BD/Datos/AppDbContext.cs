@@ -27,6 +27,7 @@ namespace G1Emergency2025.BD.Datos
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<TipoEstado> TipoEstados { get; set; }
         public DbSet<TipoMovil> TipoMoviles { get; set; }
+        public DbSet<HistorialEvento> HistorialEventos { get; set; }
 
 
         public DbSet<UsuarioRol> UsuarioRols { get; set; }

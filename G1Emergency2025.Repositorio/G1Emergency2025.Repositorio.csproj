@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\G1Emergency2025.BD\G1Emergency2025.BD.csproj" />
-    <ProjectReference Include="..\G1Emergency2025.Shared\G1Emergency2025.Shared.csproj" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.10" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Repositorios\" />
+    <ProjectReference Include="..\G1Emergency2025.BD\G1Emergency2025.BD.csproj" />
+    <ProjectReference Include="..\G1Emergency2025.Shared\G1Emergency2025.Shared.csproj" />
   </ItemGroup>
 
 </Project>
