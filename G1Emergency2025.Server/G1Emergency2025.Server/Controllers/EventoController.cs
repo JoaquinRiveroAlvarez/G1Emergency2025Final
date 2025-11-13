@@ -45,18 +45,6 @@ namespace Proyecto2025.Server.Controllers
             return Ok(tipoProvincia);
         }
 
-        [HttpGet("Codigo/{cod}")]
-        public async Task<ActionResult<EventoDTO>> GetByCod(string cod)
-        {
-            var tipoProvincia = await repositorio.SelectByCod(cod);
-            if (tipoProvincia is null)
-            {
-                return NotFound($"No existe el registro con el código: {cod}.");
-            }
-
-            return Ok(tipoProvincia);
-        }
-
         [HttpGet("ListaEvento")]
         public async Task<IActionResult> GetListaEvento()
         {
@@ -74,15 +62,48 @@ namespace Proyecto2025.Server.Controllers
             return Ok(eventos);
         }
 
-        [HttpGet("{id}/ListaEventosPorCodigo")]
-        public async Task<ActionResult<List<EventoListadoDTO>>> ListaDetallePedidoPorId(string cod)
+        [HttpGet("EventoPorCodigo/{cod}")]
+        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoCodigo(string cod)
         {
-            var lista = await repositorio.SelectListaPorCod(cod);
+            var lista = await repositorio.SelectPorCod(cod);
             if (lista == null)
             {
                 return NotFound($"No se encontro elementos en la lista con el código: {cod}.");
             }
             return Ok(lista);
+        }
+
+        [HttpGet("EventoPorFecha/{fechaHora}")]
+        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoFechaHora(DateTime fechaHora)
+        {
+            var lista = await repositorio.SelectPorFecha(fechaHora);
+            if (lista == null)
+            {
+                return NotFound($"No se encontro elementos en la lista con la fecha: {fechaHora}.");
+            }
+            return Ok(lista);
+        }
+
+        [HttpGet("buscarPorFecha")]
+        public async Task<ActionResult<List<EventoListadoDTO>>> BuscarPorFecha(
+        [FromQuery] int? anio,
+        [FromQuery] int? mes,
+        [FromQuery] int? dia,
+        [FromQuery] int? hora)
+        {
+            try
+            {
+                var eventos = await repositorio.SelectPorFechaFlexible(anio, mes, dia, hora);
+
+                if (!eventos.Any())
+                    return NotFound("No se encontraron eventos con esos filtros.");
+
+                return Ok(eventos);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error al buscar eventos: {ex.Message}");
+            }
         }
 
         [HttpPost]

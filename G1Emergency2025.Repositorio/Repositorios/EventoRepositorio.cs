@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 //using Microsoft.EntityFrameworkCore.Migrations;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,12 +29,132 @@ namespace G1Emergency2025.Repositorio.Repositorios
             this.usuarioRepo = usuarioRepo;
             this.lugarHechoRepo = lugarHechoRepo;
         }
-        public async Task<Evento?> SelectByCod(string cod)
+        public async Task<EventoListadoDTO?> SelectPorFecha(DateTime fechaHora)
         {
-            return await context.Set<Evento>().FirstOrDefaultAsync(x => x.Codigo == cod);
+            return await context.Eventos
+                .Include(e => e.PacienteEventos)
+                    .ThenInclude(pe => pe.Pacientes)
+                .Include(e => e.EventoUsuarios)
+                    .ThenInclude(eu => eu.Usuarios)
+                .Include(e => e.EventoLugarHechos)
+                    .ThenInclude(elh => elh.LugarHecho)
+                .Include(e => e.TipoEstados)
+                .Include(e => e.Causa)
+                .Where(e => e.FechaHora == fechaHora)
+
+                .Select(e => new EventoListadoDTO
+                {
+                    Id = e.Id,
+                    Codigo = e.Codigo,
+                    colorEvento = e.colorEvento,
+                    Ubicacion = e.Ubicacion,
+                    Telefono = e.Telefono,
+                    FechaHora = e.FechaHora,
+                    Causa = e.Causa!.posibleCausa,
+                    TipoEstado = e.TipoEstados!.Tipo,
+                    Pacientes = e.PacienteEventos
+                        .Select(pe => new PacienteResumenDTO
+                        {
+                            Id = pe.PacienteId,
+                            ObraSocial = pe.Pacientes!.ObraSocial,
+                            NombrePersona = pe.Pacientes!.Persona!.Nombre,
+                            DNIPersona = pe.Pacientes!.Persona!.DNI,
+                            LegajoPersona = pe.Pacientes!.Persona!.Legajo,
+                            DireccionPersona = pe.Pacientes!.Persona!.Direccion,
+                            SexoPersona = pe.Pacientes!.Persona!.Sexo,
+                            EdadPersona = pe.Pacientes!.Persona!.Edad,
+                            HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                        }).ToList(),
+
+                    Usuarios = e.EventoUsuarios
+                        .Select(eu => new UsuarioResumenDTO
+                        {
+                            Id = eu.UsuarioId,
+                            Nombre = eu.Usuarios!.Nombre,
+                            Contrasena = eu.Usuarios.Contrasena
+                        }).ToList(),
+
+                    Lugares = e.EventoLugarHechos
+                        .Select(elh => new LugarHechoResumenDTO
+                        {
+                            Id = elh.LugarHecho!.Id,
+                            Codigo = elh.LugarHecho.Codigo,
+                            Tipo = elh.LugarHecho.Tipo,
+                            Descripcion = elh.LugarHecho.Descripcion
+                        }).ToList()
+                })
+                .FirstOrDefaultAsync();
         }
 
-        public async Task<EventoListadoDTO?> SelectListaPorCod(string cod)
+        public async Task<List<EventoListadoDTO>> SelectPorFechaFlexible(
+                    int? anio = null,
+                    int? mes = null,
+                    int? dia = null,
+                    int? hora = null)
+        {
+            var query = context.Eventos
+                .Include(e => e.PacienteEventos).ThenInclude(pe => pe.Pacientes).ThenInclude(p => p.Persona)
+                .Include(e => e.EventoUsuarios).ThenInclude(eu => eu.Usuarios)
+                .Include(e => e.EventoLugarHechos).ThenInclude(elh => elh.LugarHecho)
+                .Include(e => e.TipoEstados)
+                .Include(e => e.Causa)
+                .AsQueryable();
+
+            if (anio.HasValue)
+                query = query.Where(e => e.FechaHora.Year == anio.Value);
+
+            if (mes.HasValue)
+                query = query.Where(e => e.FechaHora.Month == mes.Value);
+
+            if (dia.HasValue)
+                query = query.Where(e => e.FechaHora.Day == dia.Value);
+
+            if (hora.HasValue)
+                query = query.Where(e => e.FechaHora.Hour == hora.Value);
+
+
+            var eventos = await query.ToListAsync();
+
+            return eventos.Select(e => new EventoListadoDTO
+            {
+                Id = e.Id,
+                Codigo = e.Codigo,
+                colorEvento = e.colorEvento,
+                Ubicacion = e.Ubicacion,
+                Telefono = e.Telefono,
+                FechaHora = e.FechaHora,
+                Causa = e.Causa!.posibleCausa,
+                TipoEstado = e.TipoEstados!.Tipo,
+                Pacientes = e.PacienteEventos.Select(pe => new PacienteResumenDTO
+                {
+                    Id = pe.PacienteId,
+                    ObraSocial = pe.Pacientes!.ObraSocial,
+                    NombrePersona = pe.Pacientes!.Persona!.Nombre,
+                    DNIPersona = pe.Pacientes!.Persona!.DNI,
+                    LegajoPersona = pe.Pacientes!.Persona!.Legajo,
+                    DireccionPersona = pe.Pacientes!.Persona!.Direccion,
+                    SexoPersona = pe.Pacientes!.Persona!.Sexo,
+                    EdadPersona = pe.Pacientes!.Persona!.Edad,
+                    HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                }).ToList(),
+                Usuarios = e.EventoUsuarios.Select(eu => new UsuarioResumenDTO
+                {
+                    Id = eu.UsuarioId,
+                    Nombre = eu.Usuarios!.Nombre,
+                    Contrasena = eu.Usuarios.Contrasena
+                }).ToList(),
+                Lugares = e.EventoLugarHechos.Select(elh => new LugarHechoResumenDTO
+                {
+                    Id = elh.LugarHecho!.Id,
+                    Codigo = elh.LugarHecho.Codigo,
+                    Tipo = elh.LugarHecho.Tipo,
+                    Descripcion = elh.LugarHecho.Descripcion
+                }).ToList()
+            }).ToList();
+        }
+
+
+        public async Task<EventoListadoDTO?> SelectPorCod(string cod)
         {
             return await context.Eventos
                 .Include(e => e.PacienteEventos)

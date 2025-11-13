@@ -5,10 +5,11 @@ namespace G1Emergency2025.Repositorio.Repositorios
 {
     public interface IEventoRepositorio : IRepositorio<Evento>
     {
-        Task<Evento?> SelectByCod(string cod);
         Task<List<EventoListadoDTO>> SelectListaEventoReciente();
         Task<List<EventoListadoDTO>> SelectListaEvento();
-        Task<EventoListadoDTO?> SelectListaPorCod(string cod);
+        Task<EventoListadoDTO?> SelectPorCod(string cod);
+        Task<EventoListadoDTO?> SelectPorFecha(DateTime fechaHora);
+        Task<List<EventoListadoDTO>> SelectPorFechaFlexible(int? anio = null, int? mes = null, int? dia = null, int? hora = null);
         Task<int> InsertarEvento(EventoDTO dto);
         Task<bool> ActualizarEvento(int id, EventoDTO dto);
         Task<bool> DeleteEvento(int id);
