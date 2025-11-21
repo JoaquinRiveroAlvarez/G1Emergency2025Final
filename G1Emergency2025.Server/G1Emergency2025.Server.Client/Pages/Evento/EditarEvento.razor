@@ -1,0 +1,280 @@
+﻿@page "/eventos/editar/{Id:int}"
+@inject IHttpServicio Http
+@inject NavigationManager Nav
+
+<h3>Editar Evento</h3>
+
+@if (cargando)
+{
+    <p>Cargando datos...</p>
+}
+else if (evento == null)
+{
+    <p>No se encontró el evento.</p>
+}
+else
+{
+    <EditForm Model="@evento" OnValidSubmit="MostrarConfirmacion">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label>Domicilio</label>
+            <InputText class="form-control" @bind-Value="evento.Ubicacion" />
+            <ValidationMessage For="@(() => evento.Ubicacion)" />
+        </div>
+
+        <div class="form-group">
+            <label>Teléfono</label>
+            <InputText class="form-control" @bind-Value="evento.Telefono" />
+            <ValidationMessage For="@(() => evento.Telefono)" />
+        </div>
+
+        <div class="form-group">
+            <label>Fecha y Hora</label>
+            <InputDate class="form-control" @bind-Value="evento.FechaHora" />
+            <ValidationMessage For="@(() => evento.FechaHora)" />
+        </div>
+
+        <div class="form-group">
+            <label>Color del Evento</label>
+            <InputSelect class="form-control" @bind-Value="evento.colorEvento">
+                @foreach (var color in Enum.GetValues<ColorEvento>())
+                {
+                    <option value="@color">@color</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => evento.colorEvento)" />
+        </div>
+
+        <div class="form-group">
+            <label>Causa</label>
+            <InputSelect class="form-control" @bind-Value="evento.CausaId">
+                <option value="0">-- Seleccionar causa --</option>
+                @foreach (var c in causas)
+                {
+                    <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => evento.CausaId)" />
+        </div>
+
+        <div class="form-group">
+            <label>Estado</label>
+            <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
+                <option value="0">-- Seleccionar estado --</option>
+                @foreach (var e in tipoestados)
+                {
+                    <option value="@e.Id">@($"{e.Codigo} - {e.Tipo}")</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => evento.TipoEstadoId)" />
+        </div>
+
+        <label>Pacientes</label>
+        <button type="button" class="btn btn-outline-primary mb-2" @onclick="AbrirModalPaciente">
+            ➕ Agregar nuevo paciente
+        </button>
+
+        <br />
+        <button class="btn btn-primary" type="submit">Guardar</button>
+        <button class="btn btn-secondary" @onclick="Volver">Cancelar</button>
+    </EditForm>
+
+    <!-- Modal de confirmación -->
+    @if (mostrarModalConfirmacion)
+    {
+        <div class="modal show d-block" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning text-dark">
+                        <h5 class="modal-title">Confirmar cambios</h5>
+                        <button type="button" class="btn-close" @onclick="CancelarConfirmacion"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Estás seguro que querés realizar este cambio?</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" @onclick="CancelarConfirmacion">No</button>
+                        <button class="btn btn-primary" @onclick="GuardarCambios">Sí, guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+
+    <!-- Modal para crear Paciente -->
+    @if (mostrarModalPaciente)
+    {
+        <div class="modal show d-block" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Agregar nuevo Paciente</h5>
+                        <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <EditForm Model="@nuevoPaciente" OnValidSubmit="GuardarPaciente">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <InputText class="form-control" @bind-Value="nuevoPaciente.Nombre" />
+                            </div>
+                            <div class="form-group">
+                                <label>DNI</label>
+                                <InputText class="form-control" @bind-Value="nuevoPaciente.DNI" />
+                            </div>
+                            <div class="form-group">
+                                <label>Dirección</label>
+                                <InputText class="form-control" @bind-Value="nuevoPaciente.Direccion" />
+                            </div>
+                            <div class="form-group">
+                                <label>Sexo</label>
+                                <InputSelect class="form-control" @bind-Value="nuevoPaciente.sexo">
+                                    <option value="">-- Seleccionar Sexo --</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                </InputSelect>
+                                <ValidationMessage For="@(() => nuevoPaciente.sexo)" />
+                            </div>
+                            <div class="form-group">
+                                <label>Edad</label>
+                                <InputText class="form-control" @bind-Value="nuevoPaciente.Edad" />
+                            </div>
+                            <div class="form-group">
+                                <label>Obra Social</label>
+                                <InputText class="form-control" @bind-Value="nuevoPaciente.ObraSocial" />
+                            </div>
+
+                            <br />
+                            <button class="btn btn-success" type="submit">Guardar</button>
+                            <button class="btn btn-secondary" @onclick="CerrarModal">Cancelar</button>
+                        </EditForm>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
+}
+
+<p>@Mensaje</p>
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private EventoDTO? evento;
+    private List<CausaDTO> causas = new();
+    private List<TipoEstadoDTO> tipoestados = new();
+    private List<PacienteResumenDTO> pacientes = new();
+    private List<UsuarioResumenDTO> usuarios = new();
+    private List<LugarHechoResumenDTO> lugares = new();
+    private string Mensaje = "";
+    private bool cargando = true;
+    private bool mostrarModalPaciente = false;
+    private bool mostrarModalConfirmacion = false;
+    private PacienteCrearDTO nuevoPaciente = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var respPacientes = await Http.Get<List<PacienteResumenDTO>>("api/paciente");
+            var respUsuarios = await Http.Get<List<UsuarioResumenDTO>>("api/usuario");
+            var respLugares = await Http.Get<List<LugarHechoResumenDTO>>("api/lugarhecho");
+            var respTipoEstados = await Http.Get<List<TipoEstadoDTO>>("api/tipoestado");
+            var respCausas = await Http.Get<List<CausaDTO>>("api/causa");
+
+            if (!respCausas.Error) causas = respCausas.Respuesta!;
+            if (!respTipoEstados.Error) tipoestados = respTipoEstados.Respuesta!;
+            if (!respPacientes.Error) pacientes = respPacientes.Respuesta!;
+            if (!respUsuarios.Error) usuarios = respUsuarios.Respuesta!;
+            if (!respLugares.Error) lugares = respLugares.Respuesta!;
+
+            var respEvento = await Http.Get<EventoDTO>($"api/evento/id/{Id}");
+            if (!respEvento.Error)
+            {
+                evento = respEvento.Respuesta!;
+            }
+            else
+            {
+                Mensaje = respEvento.ObtenerError();
+            }
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al cargar datos: {ex.Message}";
+        }
+        cargando = false;
+    }
+
+    private void AbrirModalPaciente()
+    {
+        nuevoPaciente = new();
+        mostrarModalPaciente = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModalPaciente = false;
+    }
+
+    private void MostrarConfirmacion()
+    {
+        mostrarModalConfirmacion = true;
+    }
+
+    private void CancelarConfirmacion()
+    {
+        mostrarModalConfirmacion = false;
+    }
+
+    private async Task GuardarCambios()
+    {
+        mostrarModalConfirmacion = false;
+
+        var resp = await Http.Put<EventoDTO, int>($"api/evento/{Id}", evento!);
+        if (!resp.Error)
+        {
+            Nav.NavigateTo("/eventos", forceLoad: true);
+        }
+        else
+        {
+            Mensaje = resp.ObtenerError();
+        }
+    }
+    private async Task GuardarPaciente()
+    {
+        var resp = await Http.Post<PacienteCrearDTO, int>("api/paciente/crearConPersona", nuevoPaciente);
+
+        if (!resp.Error)
+        {
+            var respPacientes = await Http.Get<List<PacienteResumenDTO>>("api/paciente");
+            if (!respPacientes.Error)
+            {
+                pacientes = respPacientes.Respuesta!;
+            }
+
+            mostrarModalPaciente = false;
+            StateHasChanged();
+        }
+        else
+        {
+            Mensaje = resp.ObtenerError();
+        }
+    }
+
+
+    private void Volver()
+    {
+        Nav.NavigateTo("/eventos");
+    }
+}
+
+
+    
+
+

@@ -1,0 +1,203 @@
+﻿@page "/eventos"
+@using System.Text.Json
+@inject IHttpServicio Http
+@inject NavigationManager Nav
+
+<h3 class="text-light">Lista de Eventos</h3>
+
+<div class="mb-3">
+    <a class="btn btn-danger me-2"
+       href="/eventos/crear"
+       title="Nuevo Evento">
+        +
+    </a>
+
+    <button class="btn btn-outline-light"
+            @onclick="AlternarVista">
+        @(mostrarTodos
+                ? "Ver eventos de las últimas 24 hs"
+                : "Ver historial")
+    </button>
+</div>
+
+@if (eventos == null)
+{
+    <div class="alert alert-secondary">Buscando...</div>
+}
+else if (eventos.Count == 0)
+{
+    <div class="alert alert-warning">No hay Eventos cargados en esta lista</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-light">
+
+            <thead class="table-dark">
+                <tr>
+                    
+                    
+                    <th>Ubicación</th>
+                    <th>Teléfono</th>
+                    <th>Fecha</th>
+                    <th>Paciente</th>
+                    <th>Usuario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var evento in eventos)
+                {
+                    var colorClase = evento.colorEvento switch
+                    {
+                        ColorEvento.Rojo => "bg-danger",
+                        ColorEvento.Amarillo => "bg-warning text-dark",
+                        ColorEvento.Verde => "bg-success",
+                      
+                        _ => "bg-secondary"
+                    };
+
+                    <tr class="@colorClase">
+                        
+
+                        <td>@evento.Ubicacion</td>
+                        <td>@evento.Telefono</td>
+                        <td>
+                            @evento.FechaHora.ToString("dd/MM/yyyy") <br />
+                            <small class="text-light">@evento.FechaHora.ToString("HH:mm:ss")</small>
+                        </td>
+
+                        <td class="align-middle">
+                            @if (evento.Pacientes != null && evento.Pacientes.Any())
+                            {
+                                @foreach (var p in evento.Pacientes)
+                                {
+                                    <a class="btn btn-sm btn-outline-light me-1"
+                                       title="Datos del paciente"
+                                       href="/paciente/detalle/@p.Id">
+                                        👁️
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-light">-</span>
+                            }
+                        </td>
+
+                        <td class="align-middle">
+                            @if (evento.Usuarios != null && evento.Usuarios.Any())
+                            {
+                                @foreach (var u in evento.Usuarios)
+                                {
+                                    <div class="mb-2">@u.Nombre</div>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-light">-</span>
+                            }
+                        </td>
+
+                        <td class="text-center" style="white-space:nowrap;">
+                            <button class="btn btn-sm btn-outline-light me-1"
+                                    title="Editar"
+                                    @onclick="() => Editar(evento.Id)">
+                                ✏
+                            </button>
+
+                            <button class="btn btn-sm btn-outline-light"
+                                    title="Borrar"
+                                    @onclick="() => Borrar(evento)">
+                                🗑
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(Mensaje))
+{
+    <div class="alert alert-info mt-3">@Mensaje</div>
+}
+
+@code {
+    List<EventoListadoDTO>? eventos;
+    string Mensaje = "";
+    bool mostrarTodos = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LeerEventos();
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error durante la inicialización: {ex.Message}";
+            Console.WriteLine($"[InitError] {ex}");
+        }
+    }
+
+    private async Task LeerEventos()
+    {
+        try
+        {
+            string endpoint = mostrarTodos
+               ? "api/evento/ListaEvento"
+               : "api/evento/ListaEventoReciente";
+
+            var resp = await Http.Get<List<EventoListadoDTO>>(endpoint);
+
+            if (!resp.Error)
+            {
+                eventos = resp.Respuesta ?? new List<EventoListadoDTO>();
+
+                eventos = eventos
+                    .OrderBy(e =>
+                     e.colorEvento == ColorEvento.Rojo ? 0 :
+                     e.colorEvento == ColorEvento.Amarillo ? 1 :
+                     e.colorEvento == ColorEvento.Verde ? 2 :
+                     3 // valor por defecto si no coincide con ninguno
+                 )
+                .ToList();
+
+            }
+            else
+            {
+                Mensaje = $"Error al obtener eventos: {resp.ObtenerError()}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"❌ Error: {ex.Message}";
+            Console.WriteLine($"[Error] {ex}");
+        }
+    }
+
+    private async Task AlternarVista()
+    {
+        mostrarTodos = !mostrarTodos;
+        await LeerEventos();
+    }
+
+    private async Task Borrar(EventoListadoDTO evento)
+    {
+        var resp = await Http.Delete($"api/evento/{evento.Id}");
+
+        if (resp.Error)
+        {
+            Mensaje = resp.ObtenerError();
+        }
+
+        await LeerEventos();
+    }
+
+    private void Editar(int id)
+    {
+        Nav.NavigateTo($"/eventos/editar/{id}");
+    }
+}
