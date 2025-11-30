@@ -1,0 +1,139 @@
+﻿
+
+@page "/eventos/crear"
+@inject IHttpServicio Http
+@inject NavigationManager Nav
+
+<h3 class="text-light">Crear Nuevo Evento</h3>
+
+@if (cargando)
+{
+    <p class="text-light">Cargando datos...</p>
+}
+else
+{
+    <EditForm Model="@evento" OnValidSubmit="GuardarEvento">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label text-light">Teléfono</label>
+                <InputText class="form-control" @bind-Value="evento.Telefono" />
+                <ValidationMessage For="@(() => evento.Telefono)" />
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label text-light">Ubicación</label>
+                <InputText class="form-control" @bind-Value="evento.Ubicacion" />
+                <ValidationMessage For="@(() => evento.Ubicacion)" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label text-light">Fecha y Hora</label>
+                <InputDate class="form-control" @bind-Value="evento.FechaHora" />
+                <ValidationMessage For="@(() => evento.FechaHora)" />
+            </div>
+        </div>
+
+
+        <div class="mb-3">
+            <label class="form-label text-light">Relato</label>
+            <InputTextArea class="form-control" @bind-Value="evento.Relato" />
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label text-light">Color del Evento</label>
+                <InputSelect class="form-control" @bind-Value="evento.colorEvento">
+                    @foreach (var color in Enum.GetValues<ColorEvento>())
+                    {
+                        <option value="@color">@color</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => evento.colorEvento)" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-light">Causa</label>
+                <InputSelect class="form-control" @bind-Value="evento.CausaId">
+                    <option value="0">-- Seleccionar causa --</option>
+                    @foreach (var c in causas)
+                    {
+                        <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => evento.CausaId)" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-light">Estado</label>
+                <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
+                    <option value="0">-- Seleccionar estado --</option>
+                    @foreach (var e in tipoestados)
+                    {
+                        <option value="@e.Id">@($"{e.Codigo} - {e.Tipo}")</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => evento.TipoEstadoId)" />
+            </div>
+        </div>
+
+
+        <div class="mt-4">
+            <button class="btn btn-success me-2" type="submit">Guardar</button>
+            <button class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+        </div>
+    </EditForm>
+}
+
+@if (!string.IsNullOrEmpty(Mensaje))
+{
+    <div class="alert alert-info mt-3">@Mensaje</div>
+}
+
+@code {
+    EventoDTO evento = new();
+    List<CausaDTO> causas = new();
+    List<TipoEstadoDTO> tipoestados = new();
+    string Mensaje = "";
+    bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var respCausas = await Http.Get<List<CausaDTO>>("api/causa");
+            var respEstados = await Http.Get<List<TipoEstadoDTO>>("api/tipoestado");
+
+            if (!respCausas.Error) causas = respCausas.Respuesta!;
+            if (!respEstados.Error) tipoestados = respEstados.Respuesta!;
+        }
+        catch (Exception ex)
+        {
+            Mensaje = $"Error al cargar datos: {ex.Message}";
+        }
+
+        cargando = false;
+    }
+
+    private async Task GuardarEvento()
+    {
+        var resp = await Http.Post<EventoDTO, int>("api/evento", evento);
+
+        if (!resp.Error)
+        {
+            Nav.NavigateTo("/eventos", forceLoad: true);
+        }
+        else
+        {
+            Mensaje = resp.ObtenerError();
+        }
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/eventos");
+    }
+}
+

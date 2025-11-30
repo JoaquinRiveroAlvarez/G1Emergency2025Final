@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+
+<header class="top-bar">
+    <div class="brand">G1Emergencia2025</div>
+    <button class="menu-toggle" @onclick="ToggleMenu">☰</button>
+    <nav class="menu" style="@menuStyle">
+        <NavLink href="/" Match="NavLinkMatch.All">Inicio</NavLink>
+        <NavLink href="/counter">Counter</NavLink>
+        <NavLink href="/weather">Weather</NavLink>
+        <NavLink href="/swagger">Swagger</NavLink>
+
+        <NavLink href="/pacientes">Pacientes</NavLink>
+        <NavLink href="/geolocalizacion">Geolocalizacion</NavLink>
+
+    </nav>
+</header>
+
+<main class="eventos-container">
+    @Body
+</main>
+
+@code {
+    private bool menuVisible = false;
+    private string menuStyle => menuVisible ? "display: flex;" : "display: none;";
+    private void ToggleMenu() => menuVisible = !menuVisible;
+}

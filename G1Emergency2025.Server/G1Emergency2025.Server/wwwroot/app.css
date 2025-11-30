@@ -1,0 +1,254 @@
+﻿/* Fondo general oscuro y texto claro */
+html, body {
+    background-color: #000;
+    color: #f8f9fa;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* Enlaces y botones */
+a, .btn-link {
+    color: #00aaff;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.btn:focus,
+.btn:active:focus,
+.btn-link.nav-link:focus,
+.form-control:focus,
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+/* Espaciado general */
+.content {
+    padding-top: 1.1rem;
+}
+
+/* Encabezado sin borde al enfocar */
+h1:focus {
+    outline: none;
+}
+
+/* Validaciones */
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid #e50000;
+}
+
+.validation-message {
+    color: #e50000;
+}
+
+/* Error Blazor */
+.blazor-error-boundary {
+    background-color: #b32121;
+    background-image: url(data:image/svg+xml;base64,...); /* mantenés tu ícono */
+    background-repeat: no-repeat;
+    background-position: 1rem center;
+    background-size: 1.8rem;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "Ocurrió un error.";
+    }
+
+/* Checkbox con borde más oscuro */
+.darker-border-checkbox.form-check-input {
+    border-color: #929292;
+}
+
+/* Placeholders flotantes */
+.form-floating > .form-control-plaintext::placeholder,
+.form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder,
+.form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+/* Tablas con fondo oscuro */
+.table {
+    color: #f8f9fa;
+}
+
+.table-dark th {
+    background-color: #212529;
+    color: #fff;
+}
+
+/* Pintar filas según color del evento */
+tr.bg-danger td {
+    background-color: #dc3545 !important;
+    color: white;
+}
+
+tr.bg-warning td {
+    background-color: #ffc107 !important;
+    color: black;
+}
+
+tr.bg-success td {
+    background-color: #198754 !important;
+    color: white;
+}
+
+tr.bg-primary td {
+    background-color: #0d6efd !important;
+    color: white;
+}
+.navbar-toggler {
+    border-color: #f8f9fa;
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba(248,249,250,1)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+.sticky-top {
+    z-index: 1050;
+}
+
+/* Barra superior con menú pegado al título */
+.top-bar {
+    display: flex;
+    align-items: center;
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    gap: 20px;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+/* Menú tipo móvil permanente con botón ☰ */
+.top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+/* Botón ☰ siempre visible */
+.menu-toggle {
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: block;
+}
+
+/* Menú oculto por defecto, se despliega al tocar ☰ */
+.menu {
+    flex-direction: column;
+    position: absolute;
+    top: 60px;
+    left: 0;
+    background-color: black;
+    width: 100%;
+    display: none;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+    .menu a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 10px 20px;
+    }
+
+/* Contenedor principal de eventos */
+.eventos-container {
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Estilo general de la tabla */
+.tabla-eventos {
+    width: 100%;
+    font-size: 0.85rem; /* texto más chico */
+    border-collapse: collapse;
+}
+
+    .tabla-eventos th,
+    .tabla-eventos td {
+        padding: 4px 8px; /* menos espacio interno */
+        border: 1px solid #ccc;
+        vertical-align: middle;
+        text-align: left;
+    }
+
+        /* Columnas específicas más angostas */
+        .tabla-eventos td.telefono,
+        .tabla-eventos th.telefono {
+            width: 90px;
+            white-space: nowrap;
+        }
+
+        .tabla-eventos td.ubicacion,
+        .tabla-eventos th.ubicacion {
+            width: 120px;
+            white-space: nowrap;
+        }
+
+        .tabla-eventos td.fecha,
+        .tabla-eventos th.fecha {
+            white-space: nowrap;
+        }
+
+    /* Íconos y botones más chicos */
+    .tabla-eventos .acciones button,
+    .tabla-eventos .acciones i {
+        font-size: 0.8rem;
+        padding: 2px 6px;
+    }
+
+    /* Filas más finas */
+    .tabla-eventos tr {
+        height: 28px;
+    }
+
+/* Responsive: scroll horizontal si es necesario */
+@media (max-width: 768px) {
+    .tabla-eventos {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/*letras del cartel de confirmacion que se veian blancas*/
+.modal-content,
+.modal-body,
+.modal-footer {
+    color: #212529 !important;
+}

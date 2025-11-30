@@ -1,0 +1,119 @@
+﻿@* @page "/pacientes"
+@using G1Emergency2025.Servicio.ServiciosHttp
+@using G1Emergency2025.Shared.DTO
+@inject IHttpServicio Http
+@inject NavigationManager Nav
+
+<h3>Listado de Pacientes</h3>
+
+<div class="mb-3">
+    <label for="eventoFiltro">Filtrar por ID de Evento:</label>
+    <input id="eventoFiltro" class="form-control" @bind="eventoIdFiltro" />
+    <div class="mt-2 d-flex gap-2">
+        <button class="btn btn-primary" @onclick="FiltrarPorEvento">Buscar</button>
+        <button class="btn btn-warning" @onclick="LimpiarFiltro">Limpiar</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <p>Cargando pacientes...</p>
+}
+else if (pacientesFiltrados.Count == 0)
+{
+    <p>No se encontraron pacientes.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID Evento</th>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Edad</th>
+                <th>Obra Social</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in pacientesFiltrados)
+            {
+                <tr>
+                    <!-- mostramos el primer evento relacionado, o todos si querés -->
+                    <td>@string.Join(", ", p.Eventos.Select(e => e.EventoId))</td>
+                    <td>@p.NombrePersona</td>
+                    <td>@p.DNIPersona</td>
+                    <td>@p.EdadPersona</td>
+                    <td>@p.ObraSocial</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(Mensaje))
+{
+    <div class="alert alert-info mt-3">@Mensaje</div>
+}
+
+@code {
+    private List<PacienteResumenDTO> pacientes = new();
+    private List<PacienteResumenDTO> pacientesFiltrados = new();
+    private bool cargando = true;
+    private string eventoIdFiltro = "";
+    private string Mensaje = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarPacientes();
+    }
+
+    private async Task CargarPacientes()
+    {
+        cargando = true;
+        var resp = await Http.Get<List<PacienteResumenDTO>>("api/paciente/ListaPacientePersonaEvento");
+
+        if (!resp.Error)
+        {
+            pacientes = resp.Respuesta ?? new();
+            pacientesFiltrados = pacientes;
+        }
+        else
+        {
+            Mensaje = "Error al cargar pacientes: " + resp.ObtenerError();
+        }
+
+        cargando = false;
+    }
+
+    private void FiltrarPorEvento()
+    {
+        if (string.IsNullOrWhiteSpace(eventoIdFiltro))
+        {
+            pacientesFiltrados = pacientes;
+        }
+        else if (int.TryParse(eventoIdFiltro, out int idEvento))
+        {
+            // CAMBIO: filtramos por Id de evento dentro de la lista de eventos del paciente
+            pacientesFiltrados = pacientes
+                .Where(p => p.Eventos.Any(e => e.EventoId == idEvento))
+                .ToList();
+
+            Mensaje = pacientesFiltrados.Count == 0
+                ? $"No se encontraron pacientes para el evento con Id {idEvento}."
+                : "";
+        }
+        else
+        {
+            Mensaje = "El Id de evento debe ser un número válido.";
+        }
+    }
+
+    private void LimpiarFiltro()
+    {
+        eventoIdFiltro = "";
+        pacientesFiltrados = pacientes;
+        Mensaje = "";
+    }
+}
+ *@
