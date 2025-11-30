@@ -76,12 +76,12 @@ namespace G1Emergency2025.Server.Controllers
         }
 
         [HttpGet("PacientePersonaEvento/{id:int}")]
-        public async Task<ActionResult> GetPacienteConEventos(int id)
+        public async Task<ActionResult> GetPacienteConEventos(string nombre)
         {
-            var paciente = await repositorio.SelectPacienteConPersonaYEvento(id);
+            var paciente = await repositorio.SelectPacienteConPersonaYEvento(nombre);
 
             if (paciente == null)
-                return NotFound(new { message = $"No se encontró el paciente con id {id}" });
+                return NotFound(new { message = $"No se encontró el paciente con id {nombre}" });
 
             return Ok(paciente);
         }

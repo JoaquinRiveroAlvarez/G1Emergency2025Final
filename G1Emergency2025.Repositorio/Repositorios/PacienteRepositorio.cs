@@ -71,13 +71,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .ToListAsync();
                 return lista;
         }
-        public async Task<PacienteResumenDTO?> SelectPacienteConPersonaYEvento(int id)
+        public async Task<PacienteResumenDTO?> SelectPacienteConPersonaYEvento(string nombre)
         {
             return await context.Pacientes
                 .Include(p => p.Persona)
                 .Include(p => p.PacienteEventos)
                     .ThenInclude(pe => pe.Eventos)
-                .Where(p => p.Id == id)
+                .Where(p => p.Persona!.Nombre == nombre)
                 .Select(p => new PacienteResumenDTO
                 {
                     Id = p.Id,
