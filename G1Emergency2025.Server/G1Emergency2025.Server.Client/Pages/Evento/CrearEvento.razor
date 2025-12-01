@@ -1,6 +1,4 @@
-﻿
-
-@page "/eventos/crear"
+﻿@page "/eventos/crear"
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
@@ -79,12 +77,143 @@ else
             </div>
         </div>
 
+        <div class="mt-3">
+            <button class="btn btn-primary" type="button" @onclick="AbrirModalPaciente">
+                + Agregar Paciente
+            </button>
+        </div>
+
 
         <div class="mt-4">
             <button class="btn btn-success me-2" type="submit">Guardar</button>
             <button class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
         </div>
     </EditForm>
+}
+
+@if (mostrarModalPaciente)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Agregar nuevo Paciente</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <EditForm Model="@nuevoPaciente" OnValidSubmit="GuardarPaciente">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Nombre" />
+                        </div>
+                        <div class="form-group">
+                            <label>Sexo</label>
+                            <InputSelect class="form-control" @bind-Value="nuevoPaciente.Persona.Sexo">
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                                <option value="Otro">Otro</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => nuevoPaciente.Persona.Sexo)" />
+                        </div>
+                        <div class="form-group">
+                            <label>DNI</label>
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.DNI" />
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Direccion" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Edad</label>
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Edad" />
+                        </div>
+                        <div class="form-group">
+                            <label>Obra Social</label>
+                            <InputSelect class="form-control" @bind-Value="nuevoPaciente.ObraSocial">
+                                <option value="Ninguna">Ninguna</option>
+                                <option value="AMCI">AMCI</option>
+                                <option value="AMMA">AMMA</option>
+                                <option value="AMMA Mediterránea">AMMA Mediterránea</option>
+                                <option value="AMEC">AMEC</option>
+                                <option value="AMEP">AMEP</option>
+                                <option value="AMUR">AMUR</option>
+                                <option value="AMSUR">AMSUR</option>
+                                <option value="ASIMRA Mutual">ASIMRA Mutual</option>
+                                <option value="Asociación Mutual CELESOL">Asociación Mutual CELESOL</option>
+                                <option value="Asociación Mutual del Docente de la Provincia de Córdoba">Asociación Mutual del Docente de la Provincia de Córdoba</option>
+                                <option value="Asociación Mutual de Docentes Privados (SADOP)">Asociación Mutual de Docentes Privados (SADOP)</option>
+                                <option value="Asociación Mutualista de Jubilados y Pensionados de Córdoba">Asociación Mutualista de Jubilados y Pensionados de Córdoba</option>
+                                <option value="Bancaria Federal Mutual">Bancaria Federal Mutual</option>
+                                <option value="CEC Mutual">CEC Mutual</option>
+                                <option value="FAMSA">FAMSA</option>
+                                <option value="FEMUCOR">FEMUCOR</option>
+                                <option value="Jerárquicos Salud (Mutual Jerárquicos)">Jerárquicos Salud (Mutual Jerárquicos)</option>
+                                <option value="Mutual 9 de Julio">Mutual 9 de Julio</option>
+                                <option value="Mutual ASIMRA">Mutual ASIMRA</option>
+                                <option value="Mutual Bancaria Federal">Mutual Bancaria Federal</option>
+                                <option value="Mutual Bancor">Mutual Bancor</option>
+                                <option value="Mutual Círculo de Suboficiales">Mutual Círculo de Suboficiales</option>
+                                <option value="Mutual Club Atlético Belgrano">Mutual Club Atlético Belgrano</option>
+                                <option value="Mutual Club Atlético Talleres">Mutual Club Atlético Talleres</option>
+                                <option value="Mutual Construcción">Mutual Construcción</option>
+                                <option value="Mutual del Magisterio">Mutual del Magisterio</option>
+                                <option value="Mutual del Personal de Obras Sanitarias">Mutual del Personal de Obras Sanitarias</option>
+                                <option value="Mutual del Personal de Telecomunicaciones">Mutual del Personal de Telecomunicaciones</option>
+                                <option value="Mutual del Docente Universitario">Mutual del Docente Universitario</option>
+                                <option value="Mutual del Transporte Automotor">Mutual del Transporte Automotor</option>
+                                <option value="Mutual de Empleados Municipales">Mutual de Empleados Municipales</option>
+                                <option value="Mutual de la Policía de Córdoba">Mutual de la Policía de Córdoba</option>
+                                <option value="Mutual de la Salud Federal">Mutual de la Salud Federal</option>
+                                <option value="Mutual de Vigiladores">Mutual de Vigiladores</option>
+                                <option value="Mutual Ferroviaria">Mutual Ferroviaria</option>
+                                <option value="Mutual Gráficos">Mutual Gráficos</option>
+                                <option value="Mutual Libertad">Mutual Libertad</option>
+                                <option value="Mutual Luz y Fuerza de Córdoba">Mutual Luz y Fuerza de Córdoba</option>
+                                <option value="Mutual Metalúrgica">Mutual Metalúrgica</option>
+                                <option value="Mutual Municipal">Mutual Municipal</option>
+                                <option value="Mutual OMEGA">Mutual OMEGA</option>
+                                <option value="Mutual PYME">Mutual PYME</option>
+                                <option value="Mutual Regional Argentina">Mutual Regional Argentina</option>
+                                <option value="Mutual SANCOR">Mutual SANCOR</option>
+                                <option value="Mutual San Cristóbal">Mutual San Cristóbal</option>
+                                <option value="Mutual SER">Mutual SER</option>
+                                <option value="Mutual SOLIDAR">Mutual SOLIDAR</option>
+                                <option value="Mutual Unión y Progreso">Mutual Unión y Progreso</option>
+                                <option value="PAMI">PAMI</option>
+                                <option value="APROSS">APROSS</option>
+                                <option value="Otro">Otro</option>
+
+                            </InputSelect>
+                            <ValidationMessage For="@(() => nuevoPaciente.ObraSocial)" />
+                        </div>
+                        <br />
+
+                        <button class="btn btn-success" type="submit" @onclick="GuardarEvento">Guardar</button>
+                        <button class="btn btn-secondary" type="button" @onclick="CerrarModal">Cancelar</button>
+
+
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+@if (pacientes.Any())
+{
+    <h5 class="text-light mt-3">Pacientes agregados</h5>
+    <ul class="list-group">
+        @foreach (var p in pacientes)
+        {
+            <li class="list-group-item">
+                @p.Persona.Nombre - @p.Persona.DNI
+            </li>
+        }
+    </ul>
 }
 
 @if (!string.IsNullOrEmpty(Mensaje))
@@ -98,6 +227,14 @@ else
     List<TipoEstadoDTO> tipoestados = new();
     string Mensaje = "";
     bool cargando = true;
+
+    bool mostrarModalPaciente = false;
+
+    PacienteCrearDTO nuevoPaciente = new()
+    ;
+    List<PacienteCrearDTO> pacientes = new();
+
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -135,5 +272,36 @@ else
     {
         Nav.NavigateTo("/eventos");
     }
-}
 
+    private void AbrirModalPaciente()
+    {
+        nuevoPaciente = new();
+        mostrarModalPaciente = true;
+    }
+
+    private void CerrarModal()
+    {
+        mostrarModalPaciente = false;
+    }
+
+    private async Task GuardarPaciente()
+    {
+        var resp = await Http.Post<PacienteCrearDTO, int>("api/paciente/crearConPersona", nuevoPaciente);
+
+        if (!resp.Error)
+        {
+
+            evento.PacienteIds.Add(resp.Respuesta);
+
+            mostrarModalPaciente = false;
+            // Mensaje = $"Paciente creado correctamente con Id {resp.Respuesta}";
+        }
+        else
+        {
+            Mensaje = resp.ObtenerError();
+        }
+    }
+
+
+
+}
