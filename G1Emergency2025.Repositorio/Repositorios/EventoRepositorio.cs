@@ -4,6 +4,7 @@ using G1Emergency2025.Shared.DTO;
 using G1Emergency2025.Shared.Enum;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations.Operations;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -48,6 +49,82 @@ namespace G1Emergency2025.Repositorio.Repositorios
             .Include(e => e.TipoEstados)
             .Include(e => e.Causa)
             .Where(e => e.TipoEstadoId == estadoEventoId)
+
+            .Select(e => new EventoListadoDTO
+            {
+                Id = e.Id,
+                Codigo = e.Codigo,
+                colorEvento = e.colorEvento,
+                Ubicacion = e.Ubicacion,
+                Telefono = e.Telefono,
+                FechaHora = e.FechaHora,
+                Causa = e.Causa!.posibleCausa,
+                TipoEstado = e.TipoEstados!.Tipo,
+                TipoEstadoId = e.TipoEstadoId,
+                Pacientes = e.PacienteEventos
+                    .Select(pe => new PacienteResumenDTO
+                    {
+                        Id = pe.PacienteId,
+                        ObraSocial = pe.Pacientes!.ObraSocial,
+                        NombrePersona = pe.Pacientes.Persona!.Nombre,
+                        DNIPersona = pe.Pacientes.Persona.DNI,
+                        DireccionPersona = pe.Pacientes!.Persona.Direccion,
+                        SexoPersona = pe.Pacientes.Persona.Sexo,
+                        EdadPersona = pe.Pacientes.Persona.Edad,
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                    }).ToList(),
+
+                Usuarios = e.EventoUsuarios
+                    .Select(eu => new UsuarioResumenDTO
+                    {
+                        Id = eu.UsuarioId,
+                        Nombre = eu.Usuarios!.Nombre,
+                        Contrasena = eu.Usuarios.Contrasena
+                    }).ToList(),
+
+                Lugares = e.EventoLugarHechos
+                    .Select(elh => new LugarHechoResumenDTO
+                    {
+                        Id = elh.LugarHecho!.Id,
+                        Codigo = elh.LugarHecho.Codigo,
+                        Tipo = elh.LugarHecho.Tipo,
+                        Descripcion = elh.LugarHecho.Descripcion
+                    }).ToList(),
+
+                Moviles = e.EventoMovils.Select(em => new MovilResumenDTO
+                {
+                    Id = em.Movil!.Id,
+                    Patente = em.Movil.Patente,
+                    TipoMovil = em.Movil.TipoMovils!.Tipo,
+                    disponibilidadMovil = em.Movil.disponibilidadMovil
+                }).ToList()
+
+            })
+            .OrderBy(e => e.FechaHora)
+            .ToListAsync();
+            return lista;
+        }
+        public async Task<List<EventoListadoDTO>> SelectPorNombrePaciente(string nombrePaciente)
+        {
+            var lista = await context.Eventos
+
+            .Include(e => e.PacienteEventos)
+                .ThenInclude(pe => pe.Pacientes)
+                .ThenInclude(p => p.Persona)
+            .Include(e => e.EventoUsuarios)
+                .ThenInclude(eu => eu.Usuarios)
+            .Include(e => e.EventoLugarHechos)
+                .ThenInclude(elh => elh.LugarHecho)
+            .Include(e => e.EventoMovils)
+                .ThenInclude(em => em.Movil)
+            .Include(e => e.TipoEstados)
+            .Include(e => e.Causa)
+                 .Where(e => e.PacienteEventos
+                     .Any(pe => pe.Pacientes != null &&
+                                pe.Pacientes.Persona != null &&
+                                EF.Functions.Like(pe.Pacientes.Persona.Nombre, $"%{nombrePaciente}%")))
+
+
 
             .Select(e => new EventoListadoDTO
             {
@@ -409,7 +486,11 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
         public async Task<List<EventoListadoDTO>> SelectListaEventoConDisponibilidad()
         {
+            var hace24hs = DateTime.Now.AddHours(-24);
+
             var lista = await context.Eventos
+
+                .Where(e => e.FechaHora >= hace24hs)
                 .Include(e => e.PacienteEventos)
                    .ThenInclude(pe => pe.Pacientes)
                    .ThenInclude(p => p!.Persona)
@@ -531,6 +612,94 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             return evento.Id;
         }
+
+        public async Task<int> InsertarEventoPaciente(EventoCrearDTO dto)
+        {
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Crear Evento
+                var evento = new Evento
+                {
+                    Relato = dto.Relato,
+                    Codigo = await GenerarCodigoUnicoAsync(),
+                    colorEvento = dto.colorEvento,
+                    Ubicacion = dto.Ubicacion,
+                    Telefono = dto.Telefono,
+                    FechaHora = dto.FechaHora,
+                    CausaId = dto.CausaId,
+                    TipoEstadoId = dto.TipoEstadoId,
+                    EstadoRegistro = EnumEstadoRegistro.activo
+                };
+
+                context.Eventos.Add(evento);
+                await context.SaveChangesAsync();
+
+                // 2. Crear Pacientes asociados al evento
+                if (dto.Pacientes != null)
+                {
+                    foreach (var pacienteDto in dto.Pacientes)
+                    {
+                        // Crear Persona
+                        Sexo sexoConvertido = Enum.Parse<Sexo>(pacienteDto.Persona.Sexo);
+                        var persona = new Persona
+                        {
+                            Nombre = pacienteDto.Persona.Nombre,
+                            DNI = pacienteDto.Persona.DNI,
+                            Legajo = pacienteDto.Persona.Legajo,
+                            Direccion = pacienteDto.Persona.Direccion,
+                            Sexo = sexoConvertido,
+                            Edad = pacienteDto.Persona.Edad
+                        };
+                        await context.Persona.AddAsync(persona);
+                        await context.SaveChangesAsync();
+
+                        // Crear Paciente
+                        var paciente = new Paciente
+                        {
+                            HistoriaClinica = await GenerarCodigoUnico(),
+                            ObraSocial = pacienteDto.ObraSocial,
+                            PersonaId = persona.Id
+                        };
+                        await context.Pacientes.AddAsync(paciente);
+                        await context.SaveChangesAsync();
+
+                        // Asociar Paciente al Evento
+                        context.PacienteEventos.Add(new PacienteEvento
+                        {
+                            PacienteId = paciente.Id,
+                            EventoId = evento.Id,
+                            DiagnosticoPresuntivo = ""
+                        });
+                    }
+                    await context.SaveChangesAsync();
+                }
+
+                // 3. Asociar otros elementos (usuarios, lugares, móviles)
+                if (dto.UsuarioIds != null)
+                    foreach (var uid in dto.UsuarioIds)
+                        await usuarioRepo.AsociarEvento(uid, evento.Id);
+
+                if (dto.LugarHechoIds != null)
+                    foreach (var lid in dto.LugarHechoIds)
+                        await lugarHechoRepo.AsociarEvento(lid, evento.Id);
+
+                if (dto.MovilIds != null)
+                    foreach (var mid in dto.MovilIds)
+                        await movilRepo.AsociarEvento(mid, evento.Id);
+
+                // 4. Confirmar transacción
+                await transaction.CommitAsync();
+                return evento.Id;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+
         public async Task<bool> ActualizarEvento(int id, EventoDTO dto)
         {
             var evento = await context.Eventos.FirstOrDefaultAsync(e => e.Id == id);
@@ -579,7 +748,24 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             return codigo;
         }
+        private async Task<string> GenerarCodigoUnico()
+        {
+            var random = new Random();
+            string historiaClinica;
+            bool existe;
 
+            do
+            {
+                // Genera un número aleatorio de 6 dígitos
+                historiaClinica = random.Next(100000, 999999).ToString();
+
+                // Verifica si ya existe en la base
+                existe = await context.Pacientes.AnyAsync(e => e.HistoriaClinica == historiaClinica);
+
+            } while (existe);
+
+            return historiaClinica;
+        }
         public async Task<bool> ActualizarRelacionesEvento(int id, EventoDTO dto)
         {
             var evento = await context.Eventos

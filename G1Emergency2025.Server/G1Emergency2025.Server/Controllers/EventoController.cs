@@ -82,7 +82,27 @@ namespace Proyecto2025.Server.Controllers
             }
             return Ok(lista);
         }
+        [HttpGet("EventoPorNombrePaciente")]
+        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoNombrePaciente([FromQuery] string nombre)
+        {
+            var lista = await repositorio.SelectPorNombrePaciente(nombre);
+            if (lista == null || lista.Count == 0)
+            {
+                return NotFound($"No se encontro elementos en la lista con el código: {nombre}.");
+            }
+            return Ok(lista);
+        }
 
+        [HttpGet("EventoPorEstado/{estado}")]
+        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoEstado(int estado)
+        {
+            var lista = await repositorio.SelectPorTipoEstado(estado);
+            if (lista == null)
+            {
+                return NotFound($"No se encontro elementos en la lista con el código: {estado}.");
+            }
+            return Ok(lista);
+        }
         [HttpGet("buscarPorFecha")]
         public async Task<ActionResult<List<EventoListadoDTO>>> BuscarPorFecha(
         [FromQuery] int? anio,
@@ -111,6 +131,23 @@ namespace Proyecto2025.Server.Controllers
             try
             {
                 int id = await repositorio.InsertarEvento(dto);
+                return Ok(id);
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
+            }
+        }
+        [HttpPost("CrearEventoConPaciente")]
+        public async Task<ActionResult> PostEventoPaciente([FromBody] EventoCrearDTO dto)
+        {
+            try
+            {
+                int id = await repositorio.InsertarEventoPaciente(dto);
                 return Ok(id);
             }
             catch (ApplicationException ex)

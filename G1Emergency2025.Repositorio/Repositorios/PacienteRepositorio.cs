@@ -1,6 +1,7 @@
 ﻿using G1Emergency2025.BD.Datos;
 using G1Emergency2025.BD.Datos.Entity;
 using G1Emergency2025.Shared.DTO;
+using G1Emergency2025.Shared.Enum;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Logging;
@@ -100,7 +101,24 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 })
                 .FirstOrDefaultAsync();
         }
+        private async Task<string> GenerarCodigoUnico()
+        {
+            var random = new Random();
+            string historiaClinica;
+            bool existe;
 
+            do
+            {
+                // Genera un número aleatorio de 6 dígitos
+                historiaClinica = random.Next(100000, 999999).ToString();
+
+                // Verifica si ya existe en la base
+                existe = await context.Pacientes.AnyAsync(e => e.HistoriaClinica == historiaClinica);
+
+            } while (existe);
+
+            return historiaClinica;
+        }
         public async Task AsociarEvento(int pacienteId, int eventoId, string diagnosticoPresuntivo)
         {
             var rel = new PacienteEvento
@@ -126,7 +144,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             // 2. Actualizar datos del paciente
             paciente.ObraSocial = dto.ObraSocial!;
-            paciente.HistoriaClinica = dto.HistoriaClinica!;
 
             // 3. Actualizar datos de persona
             if (paciente.Persona != null)
@@ -134,7 +151,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 paciente.Persona.Nombre = dto.PersonaDTO.Nombre;
                 paciente.Persona.DNI = dto.PersonaDTO.DNI;
                 paciente.Persona.Direccion = dto.PersonaDTO.Direccion;
-                paciente.Persona.Sexo = dto.PersonaDTO.sexo;
+                paciente.Persona.Sexo = dto.PersonaDTO.Sexo;
                 paciente.Persona.Edad = dto.PersonaDTO.Edad;
             }
 
@@ -175,46 +192,35 @@ namespace G1Emergency2025.Repositorio.Repositorios
             await context.SaveChangesAsync();
             return true;
         }
-
         public async Task<int> CrearPacienteConPersona(PacienteCrearDTO dto)
         {
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Crear Persona
+                // 1. Convertir Sexo
+                Sexo sexoConvertido = Enum.Parse<Sexo>(dto.Persona.Sexo);
+
+                // 2. Crear Persona
                 var persona = new Persona
                 {
                     Nombre = dto.Persona.Nombre,
                     DNI = dto.Persona.DNI,
                     Legajo = dto.Persona.Legajo,
                     Direccion = dto.Persona.Direccion,
-                    Sexo = dto.Persona.Sexo,
+                    Sexo = sexoConvertido,
                     Edad = dto.Persona.Edad
                 };
                 await context.Persona.AddAsync(persona);
                 await context.SaveChangesAsync();
 
-                // 2. Crear Paciente
+                // 3. Crear Paciente
                 var paciente = new Paciente
                 {
+                    HistoriaClinica = await GenerarCodigoUnico(),
                     ObraSocial = dto.ObraSocial,
-                    HistoriaClinica = dto.HistoriaClinica,
                     PersonaId = persona.Id
                 };
                 await context.Pacientes.AddAsync(paciente);
-                await context.SaveChangesAsync();
-
-                // 3. Asociar eventos con diagnóstico presuntivo
-                foreach (var ev in dto.Eventos)
-                {
-                    var rel = new PacienteEvento
-                    {
-                        PacienteId = paciente.Id,
-                        EventoId = ev.EventoId,
-                        DiagnosticoPresuntivo = ev.DiagnosticoPresuntivo
-                    };
-                    context.PacienteEventos.Add(rel);
-                }
                 await context.SaveChangesAsync();
 
                 // 4. Confirmar transacción
@@ -227,5 +233,63 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 throw;
             }
         }
+
+        //public async Task<int> CrearPacienteConPersona(PacienteCrearDTO dto)
+        //{
+        //    using var transaction = await context.Database.BeginTransactionAsync();
+        //    try
+        //    {
+        //        // 1. Convertir Sexo
+        //        Sexo sexoConvertido = Enum.Parse<Sexo>(dto.Persona.Sexo);
+
+        //        // 2. Crear Persona
+        //        var persona = new Persona
+        //        {
+        //            Nombre = dto.Persona.Nombre,
+        //            DNI = dto.Persona.DNI,
+        //            Legajo = dto.Persona.Legajo,
+        //            Direccion = dto.Persona.Direccion,
+        //            Sexo = sexoConvertido,
+        //            Edad = dto.Persona.Edad
+        //        };
+        //        await context.Persona.AddAsync(persona);
+        //        await context.SaveChangesAsync();
+
+        //        // 3. Crear Paciente
+        //        var paciente = new Paciente
+        //        {
+        //            HistoriaClinica = await GenerarCodigoUnico(),
+        //            ObraSocial = dto.ObraSocial,
+        //            PersonaId = persona.Id
+        //        };
+        //        await context.Pacientes.AddAsync(paciente);
+        //        await context.SaveChangesAsync();
+
+        //        // 4. Confirmar transacción
+        //        await transaction.CommitAsync();
+        //        return paciente.Id;
+        //    }
+        //    catch (DbUpdateException ex)
+        //    {
+        //        await transaction.RollbackAsync();
+
+        //        // Reintento por colisión de código único
+        //        if (ex.InnerException?.Message.Contains("Paciente_UQ") == true)
+        //        {
+        //            var nuevoCodigo = await GenerarCodigoUnico();
+        //            paciente.HistoriaClinica = nuevoCodigo;
+        //            await context.SaveChangesAsync();
+        //            return paciente.Id;
+        //        }
+
+        //        throw;
+        //    }
+        //    catch
+        //    {
+        //        await transaction.RollbackAsync();
+        //        throw;
+        //    }
+        //}
+
     }
 }

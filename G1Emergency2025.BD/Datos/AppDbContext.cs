@@ -45,6 +45,15 @@ namespace G1Emergency2025.BD.Datos
 
             modelBuilder.Entity<PacienteEvento>()
                 .HasKey(pp => new { pp.PacienteId, pp.EventoId });
+            modelBuilder.Entity<PacienteEvento>()
+                .HasOne(pe => pe.Pacientes)
+                .WithMany(p => p.PacienteEventos)
+                .HasForeignKey(pe => pe.PacienteId);
+
+            modelBuilder.Entity<PacienteEvento>()
+                .HasOne(pe => pe.Eventos)
+                .WithMany(e => e.PacienteEventos)
+                .HasForeignKey(pe => pe.EventoId);
 
             modelBuilder.Entity<EventoLugarHecho>()
                 .HasKey(elh => new { elh.LugarHechoId, elh.EventoId });

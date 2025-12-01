@@ -83,7 +83,7 @@ namespace Proyecto2025.Server.Controllers
                 {
                     Nombre = DTO.Nombre,
                     DNI = DTO.DNI,
-                    Sexo = DTO.sexo,
+                    Sexo = DTO.Sexo,
                     Edad = DTO.Edad,
                     Direccion = DTO.Direccion,
                     Legajo = DTO.Legajo
@@ -106,7 +106,7 @@ namespace Proyecto2025.Server.Controllers
                 Id = id,
                 Nombre = DTO.Nombre,
                 DNI = DTO.DNI,
-                Sexo = DTO.sexo,
+                Sexo = DTO.Sexo,
                 Edad = DTO.Edad,
                 Direccion = DTO.Direccion,
                 Legajo = DTO.Legajo

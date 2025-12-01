@@ -17,7 +17,7 @@ namespace G1Emergency2025.Shared.DTO
         public string DireccionPersona {  get; set; } = string.Empty;
         public Sexo SexoPersona {  get; set; }
         public string EdadPersona {  get; set; } = string.Empty;
-        public string HistoriaClinica {  get; set; } = "Ninguna";
+        public string HistoriaClinica {  get; set; } = string.Empty;
         public List<EventoPacienteMostrarDTO> Eventos { get; set; } = new();
     }
 }

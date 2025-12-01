@@ -144,8 +144,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
             return lista;
         }
 
-
-
         //public async Task<List<MovilesPorDisponibilidadDTO>> SelectListaMovilAgrupada()
         //{
         //    var lista = await context.Movils

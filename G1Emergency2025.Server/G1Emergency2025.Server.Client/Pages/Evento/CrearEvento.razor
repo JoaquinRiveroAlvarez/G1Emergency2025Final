@@ -83,6 +83,19 @@ else
             </button>
         </div>
 
+        @if (pacientes.Any())
+        {
+            <h5 class="text-light mt-3">Pacientes agregados</h5>
+            <ul class="list-group">
+                @foreach (var p in pacientes)
+                {
+                    <li class="list-group-item">
+                        @p.Persona.Nombre - @p.Persona.DNI
+                    </li>
+                }
+            </ul>
+        }
+
 
         <div class="mt-4">
             <button class="btn btn-success me-2" type="submit">Guardar</button>
@@ -192,7 +205,7 @@ else
                         </div>
                         <br />
 
-                        <button class="btn btn-success" type="submit" @onclick="GuardarEvento">Guardar</button>
+                        <button class="btn btn-success" type="submit">Guardar</button>
                         <button class="btn btn-secondary" type="button" @onclick="CerrarModal">Cancelar</button>
 
 
@@ -222,7 +235,7 @@ else
 }
 
 @code {
-    EventoDTO evento = new();
+    EventoCrearDTO evento = new();
     List<CausaDTO> causas = new();
     List<TipoEstadoDTO> tipoestados = new();
     string Mensaje = "";
@@ -230,8 +243,7 @@ else
 
     bool mostrarModalPaciente = false;
 
-    PacienteCrearDTO nuevoPaciente = new()
-    ;
+    PacienteCrearDTO nuevoPaciente = new();
     List<PacienteCrearDTO> pacientes = new();
 
 
@@ -256,16 +268,16 @@ else
 
     private async Task GuardarEvento()
     {
-        var resp = await Http.Post<EventoDTO, int>("api/evento", evento);
+        evento.Pacientes = pacientes;
 
-        if (!resp.Error)
+        var respEvento = await Http.Post<EventoCrearDTO, int>("api/evento/CrearEventoConPaciente", evento);
+        if (respEvento.Error)
         {
-            Nav.NavigateTo("/eventos", forceLoad: true);
+            Mensaje = respEvento.ObtenerError();
+            return;
         }
-        else
-        {
-            Mensaje = resp.ObtenerError();
-        }
+
+        Nav.NavigateTo("/eventos", forceLoad: true);
     }
 
     private void Cancelar()
@@ -283,25 +295,25 @@ else
     {
         mostrarModalPaciente = false;
     }
-
-    private async Task GuardarPaciente()
+    private void GuardarPaciente()
     {
-        var resp = await Http.Post<PacienteCrearDTO, int>("api/paciente/crearConPersona", nuevoPaciente);
-
-        if (!resp.Error)
+        var copia = new PacienteCrearDTO
         {
+            Persona = new PersonaCrearDTO
+            {
+                Nombre = nuevoPaciente.Persona.Nombre,
+                DNI = nuevoPaciente.Persona.DNI,
+                Legajo = nuevoPaciente.Persona.Legajo,
+                Direccion = nuevoPaciente.Persona.Direccion,
+                Sexo = nuevoPaciente.Persona.Sexo,
+                Edad = nuevoPaciente.Persona.Edad
+            },
+            ObraSocial = nuevoPaciente.ObraSocial
+        };
 
-            evento.PacienteIds.Add(resp.Respuesta);
-
-            mostrarModalPaciente = false;
-            // Mensaje = $"Paciente creado correctamente con Id {resp.Respuesta}";
-        }
-        else
-        {
-            Mensaje = resp.ObtenerError();
-        }
+        pacientes.Add(copia);
+        mostrarModalPaciente = false;
     }
-
 
 
 }
