@@ -252,3 +252,76 @@ tr.bg-primary td {
 .modal-footer {
     color: #212529 !important;
 }
+
+/*Geolocalizacion*/
+.map-container {
+    position: relative;
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.map-image {
+    width: 100%;
+    max-width: 1000px; /* podés subirlo más si querés */
+    height: auto;
+    display: block;
+    margin: auto;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+}
+
+
+.ambulancia-icon {
+    position: absolute;
+    cursor: pointer;
+    font-size: 24px;
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s ease;
+}
+
+    .ambulancia-icon:hover {
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+
+/*Moviles*/
+
+.icon-libre {
+    color: #28a745; /* verde */
+}
+
+.icon-sinuso {
+    color: #6c757d; /* gris */
+}
+
+.icon-paciente {
+    color: #ffc107; /* amarillo */
+}
+
+.icon-sinpaciente {
+    color: #17a2b8; /* celeste */
+}
+
+.icon-mantenimiento {
+    color: #fd7e14; /* naranja */
+}
+
+.icon-desconocido {
+    color: #ffffff; /* blanco */
+}
+
+.leyenda-mapa {
+    max-width: 600px;
+    margin: auto;
+    padding: 1rem;
+    background-color: #212529;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.leyenda-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
