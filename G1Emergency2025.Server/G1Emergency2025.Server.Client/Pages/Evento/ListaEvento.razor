@@ -18,6 +18,8 @@
                 ? "Ver eventos de las últimas 24 hs"
                 : "Ver historial")
     </button>
+
+    <button type="button" class="btn btn-primary" @onclick="IrAGeolocalizacion"> Geolocalización </button>
 </div>
 
 @if (eventos == null)
@@ -256,5 +258,10 @@ else
     private void Editar(int id)
     {
         Nav.NavigateTo($"/eventos/editar/{id}");
+    }
+
+    private void IrAGeolocalizacion() 
+    { 
+        Nav.NavigateTo("/geolocalizacion"); 
     }
 }

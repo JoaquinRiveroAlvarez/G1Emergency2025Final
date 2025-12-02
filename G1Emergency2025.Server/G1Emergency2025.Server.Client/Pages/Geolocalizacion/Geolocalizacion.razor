@@ -4,8 +4,85 @@
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
-<h3>Geolocalizacion</h3>
+
+
+<h3>Geolocalización</h3>
+
+<div class="map-container">
+    <img src="images/mapacordoba.jpg" class="map-image" />
+
+
+
+
+
+    @foreach (var movil in moviles)
+    {
+        if (posiciones.TryGetValue(movil.Id, out var p))
+        {
+            <div class="ambulancia-icon"
+                 style="top:@p.Top%; left:@p.Left%;"
+
+                 @onclick="() => MostrarModal(movil)">
+                🚑
+            </div>
+        }
+    }
+</div>
+
+@if (movilSeleccionado != null)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Móvil @movilSeleccionado.Patente</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><b>Tipo:</b> @movilSeleccionado.TipoMovil</p>
+                    <p><b>Disponibilidad:</b> @movilSeleccionado.disponibilidadMovil</p>
+                    <p><b>Evento:</b> @movilSeleccionado.Eventos.FirstOrDefault()</p>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
+    private List<MovilListadoDTO> moviles = new()
+    {
+        new MovilListadoDTO {
+            Id = 1,
+            Patente = "ABC123",
+            TipoMovil = "Ambulancia",
+            disponibilidadMovil = DisponibilidadMovil.libre,
+            Eventos = new List<string> { "Accidente en Av. Colón" }
+        },
+        new MovilListadoDTO {
+            Id = 2,
+            Patente = "XYZ789",
+            TipoMovil = "Ambulancia",
+            disponibilidadMovil = DisponibilidadMovil.enCaminoConPaciente,
+            Eventos = new List<string> { "Traslado Hospital Clínicas" }
+        }
+    };
 
+    // Posiciones visuales independientes del DTO
+    private readonly Dictionary<int, Posicion> posiciones = new()
+    {
+        { 1, new Posicion { Top = 40, Left = 30 } },
+        { 2, new Posicion { Top = 65, Left = 55 } }
+    };
+
+    private MovilListadoDTO? movilSeleccionado;
+
+    private void MostrarModal(MovilListadoDTO movil) => movilSeleccionado = movil;
+    private void CerrarModal() => movilSeleccionado = null;
+
+    private class Posicion
+    {
+        public double Top { get; set; }
+        public double Left { get; set; }
+    }
 }
+
