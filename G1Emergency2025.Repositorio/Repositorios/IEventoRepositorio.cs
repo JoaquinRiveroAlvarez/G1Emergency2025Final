@@ -15,6 +15,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         Task<int> InsertarEvento(EventoDTO dto);
         Task<int> InsertarEventoPaciente(EventoCrearDTO dto);
         Task<bool> ActualizarEvento(int id, EventoDTO dto);
+        Task<bool> ActualizarEventoPaciente(int id, EventoCrearDTO dto);
         Task<bool> ActualizarEstadoEvento(int id, int estadoId);
         Task<bool> DeleteEvento(int id);
         Task<bool> ActualizarRelacionesEvento(int id, EventoDTO dto);

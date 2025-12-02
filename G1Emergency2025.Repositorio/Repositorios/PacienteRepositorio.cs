@@ -20,9 +20,9 @@ namespace G1Emergency2025.Repositorio.Repositorios
         {
             this.context = context;
         }
-        public async Task<Paciente?> SelectByObraSocial(string cod)
+        public async Task<PacienteResumenDTO?> SelectByObraSocial(string cod)
         {
-            return await context.Set<Paciente>().FirstOrDefaultAsync(x => x.ObraSocial == cod);
+            return await context.Set<PacienteResumenDTO>().FirstOrDefaultAsync(x => x.ObraSocial == cod);
         }
         public async Task<List<PacienteResumenDTO>> SelectListaPaciente()
         {
@@ -72,13 +72,71 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .ToListAsync();
                 return lista;
         }
-        public async Task<PacienteResumenDTO?> SelectPacienteConPersonaYEvento(string nombre)
+        public async Task<PacienteResumenDTO?> SelectNombrePacienteConPersonaYEvento(string nombre)
         {
             return await context.Pacientes
                 .Include(p => p.Persona)
                 .Include(p => p.PacienteEventos)
                     .ThenInclude(pe => pe.Eventos)
                 .Where(p => p.Persona!.Nombre == nombre)
+                .Select(p => new PacienteResumenDTO
+                {
+                    Id = p.Id,
+                    ObraSocial = p.ObraSocial,
+                    NombrePersona = p.Persona!.Nombre,
+                    DNIPersona = p.Persona!.DNI,
+                    DireccionPersona = p.Persona!.Direccion,
+                    EdadPersona = p.Persona!.Edad,
+                    SexoPersona = p.Persona!.Sexo,
+                    HistoriaClinica = p.HistoriaClinica,
+
+                    Eventos = p.PacienteEventos
+                        .Select(pe => new EventoPacienteMostrarDTO
+                        {
+                            EventoId = pe.EventoId,
+                            CodigoEvento = pe.Eventos!.Codigo,
+                            DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
+        public async Task<PacienteResumenDTO?> SelectDNIPacienteConPersonaYEvento(string cod)
+        {
+            return await context.Pacientes
+                .Include(p => p.Persona)
+                .Include(p => p.PacienteEventos)
+                    .ThenInclude(pe => pe.Eventos)
+                .Where(p => p.Persona!.DNI == cod)
+                .Select(p => new PacienteResumenDTO
+                {
+                    Id = p.Id,
+                    ObraSocial = p.ObraSocial,
+                    NombrePersona = p.Persona!.Nombre,
+                    DNIPersona = p.Persona!.DNI,
+                    DireccionPersona = p.Persona!.Direccion,
+                    EdadPersona = p.Persona!.Edad,
+                    SexoPersona = p.Persona!.Sexo,
+                    HistoriaClinica = p.HistoriaClinica,
+
+                    Eventos = p.PacienteEventos
+                        .Select(pe => new EventoPacienteMostrarDTO
+                        {
+                            EventoId = pe.EventoId,
+                            CodigoEvento = pe.Eventos!.Codigo,
+                            DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
+        public async Task<PacienteResumenDTO?> SelectHistoriaClinicaPacienteConPersonaYEvento(string historiaClinica)
+        {
+            return await context.Pacientes
+                .Include(p => p.Persona)
+                .Include(p => p.PacienteEventos)
+                    .ThenInclude(pe => pe.Eventos)
+                .Where(p => p.HistoriaClinica == historiaClinica)
                 .Select(p => new PacienteResumenDTO
                 {
                     Id = p.Id,

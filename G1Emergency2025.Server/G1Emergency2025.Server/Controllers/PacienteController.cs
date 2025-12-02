@@ -75,13 +75,35 @@ namespace G1Emergency2025.Server.Controllers
             return Ok(Paciente);
         }
 
-        [HttpGet("PacientePersonaEvento/{id:int}")]
-        public async Task<ActionResult> GetPacienteConEventos(string nombre)
+        [HttpGet("NombrePacienteEvento")]
+        public async Task<ActionResult> GetNombrePacienteConEventos(string nombre)
         {
-            var paciente = await repositorio.SelectPacienteConPersonaYEvento(nombre);
+            var paciente = await repositorio.SelectNombrePacienteConPersonaYEvento(nombre);
 
             if (paciente == null)
-                return NotFound(new { message = $"No se encontró el paciente con id {nombre}" });
+                return NotFound(new { message = $"No se encontró el paciente con el nombre: {nombre}" });
+
+            return Ok(paciente);
+        }
+
+        [HttpGet("HistoriaClinicaPacienteEvento")]
+        public async Task<ActionResult> GetHistoriaClinicaPacienteConEventos(string historiaClinica)
+        {
+            var paciente = await repositorio.SelectHistoriaClinicaPacienteConPersonaYEvento(historiaClinica);
+
+            if (paciente == null)
+                return NotFound(new { message = $"No se encontró el paciente con la historia clinica: {historiaClinica}" });
+
+            return Ok(paciente);
+        }
+
+        [HttpGet("DNIPacienteEvento")]
+        public async Task<ActionResult> GetDNIPacienteConEventos(string cod)
+        {
+            var paciente = await repositorio.SelectDNIPacienteConPersonaYEvento(cod);
+
+            if (paciente == null)
+                return NotFound(new { message = $"No se encontró el paciente con con el DNI: {cod}" });
 
             return Ok(paciente);
         }
