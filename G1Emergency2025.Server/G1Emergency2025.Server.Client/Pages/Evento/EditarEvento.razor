@@ -81,11 +81,27 @@ else
             </div>
         </div>
 
-        <div class="mt-4 d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-success">Guardar cambios</button>
-            <button type="button" class="btn btn-secondary" @onclick="Volver">Cancelar</button>
+        <div class="mt-4 d-flex flex-wrap gap-2">    
             <button type="button" class="btn btn-info" @onclick="AbrirModalPaciente">+ Agregar paciente</button>
         </div>
+
+        @if (pacientes.Any())
+        {
+            <h5 class="text-light mt-3">Pacientes agregados</h5>
+            <ul class="list-group">
+                @foreach (var p in pacientes)
+                {
+                    <li class="list-group-item">
+                        @p.Persona.Nombre - @p.Persona.DNI
+                    </li>
+                }
+            </ul>
+        }
+         <div class="mt-4 d-flex flex-wrap gap-2">
+            <button class="btn btn-success" type="submit">Guardar</button>
+            <button class="btn btn-secondary" type="button" @onclick="CerrarModal">Cancelar</button>
+        </div>
+
     </EditForm>
 }
 
@@ -358,7 +374,7 @@ else
 <p>@Mensaje</p>
 
 @code {
-    [Parameter] public int Id { get; set; }
+        [Parameter] public int Id{ get; set; }
     private EventoDTO? evento;
     private List<CausaDTO> causas = new();
     private List<TipoEstadoDTO> tipoestados = new();
@@ -368,9 +384,11 @@ else
     private bool cargando = true;
     private bool mostrarModalConfirmacion = false;
 
-    private List<PacienteActualizarDTO> pacienteact = new();
-    private PacienteCrearDTO nuevoPaciente = new();
-    private PacienteActualizarDTO pacienteEditar = new() { PersonaDTO = new PersonaDTO() };
+
+    PacienteCrearDTO nuevoPaciente = new();
+    List<PacienteCrearDTO> pacientes = new();
+    PacienteActualizarDTO pacienteEditar = new() { PersonaDTO = new PersonaDTO() };
+    List<PacienteActualizarDTO> pacienteact = new();    
     private bool mostrarModalPaciente = false;
     private bool mostrarModalEditar = false;
 
@@ -448,43 +466,37 @@ else
         }
     }
 
-    private async Task GuardarPaciente()
+    private void GuardarPaciente()
     {
-        var resp = await Http.Post<PacienteCrearDTO, int>("api/paciente/crearConPersona", nuevoPaciente);
-
-        if (!resp.Error)
-        {
-            evento.PacienteIds.Add(resp.Respuesta);
-            mostrarModalPaciente = false;
-
-            // refrescar lista de pacientes del evento
-            var respPacientes = await Http.Get<List<PacienteActualizarDTO>>($"api/paciente/PacientePersonaEvento/{Id}");
-            if (!respPacientes.Error)
-                pacienteact = respPacientes.Respuesta!;
-
-            Mensaje = $"Paciente creado correctamente con Id {resp.Respuesta}";
-        }
-        else
-        {
-            Mensaje = resp.ObtenerError();
-        }
+        var copia = new PacienteCrearDTO
+            {
+                Persona = new PersonaCrearDTO
+                {
+                    Nombre = nuevoPaciente.Persona.Nombre,
+                    DNI = nuevoPaciente.Persona.DNI,
+                    Legajo = nuevoPaciente.Persona.Legajo,
+                    Direccion = nuevoPaciente.Persona.Direccion,
+                    Sexo = nuevoPaciente.Persona.Sexo,
+                    Edad = nuevoPaciente.Persona.Edad
+                },
+                ObraSocial = nuevoPaciente.ObraSocial
+            };
     }
 
+    // private async Task AbrirModalEditarPaciente(int pacienteId)
+    // {
+    //     var resp = await Http.Get<PacienteActualizarDTO>($"api/paciente/id/{pacienteId}");
+    //     if (!resp.Error)
+    //     {
+    //         pacienteEditar = resp.Respuesta!;
+    //         mostrarModalEditar = true;
+    //     }
+    // }
 
-    private async Task AbrirModalEditarPaciente(int pacienteId)
-    {
-        var resp = await Http.Get<PacienteActualizarDTO>($"api/paciente/id/{pacienteId}");
-        if (!resp.Error)
-        {
-            pacienteEditar = resp.Respuesta!;
-            mostrarModalEditar = true;
-        }
-    }
-
-    private void CerrarModalEditar()
-    {
-        mostrarModalEditar = false;
-    }
+    // private void CerrarModalEditar()
+    // {
+    //     mostrarModalEditar = false;
+    // }
 
     // private async Task GuardarPacienteEditado()
     // {
