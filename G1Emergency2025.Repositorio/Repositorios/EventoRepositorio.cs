@@ -515,7 +515,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
         {
 
             var lista = await context.Eventos
-
+            .Where(e => e.TipoEstados!.Codigo != "03"   // 🔹 excluye finalizados
+                 && e.EstadoRegistro == EnumEstadoRegistro.activo)
             .Include(e => e.PacienteEventos)
                 .ThenInclude(pe => pe.Pacientes)
             .Include(e => e.EventoUsuarios)

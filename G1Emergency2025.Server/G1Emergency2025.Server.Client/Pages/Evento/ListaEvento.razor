@@ -5,8 +5,8 @@
 
 <h3 class="text-light">Lista de Eventos</h3>
 
-<div class="mb-3 d-flex align-items-center gap-3">
-    <a class="btn btn-danger"
+<div class="mb-3">
+    <a class="btn btn-danger me-2"
        href="/eventos/crear"
        title="Nuevo Evento">
         +
@@ -19,11 +19,10 @@
                 : "Ver historial")
     </button>
 
-    <NavLink href="/geolocalizacion" title="Geolocalización" class="text-primary fs-4">
+     <NavLink href="/geolocalizacion" title="Geolocalización" class="text-primary fs-4">
         <i class="fas fa-earth-americas"></i>
     </NavLink>
 </div>
-
 
 @if (eventos == null)
 {
@@ -36,7 +35,8 @@ else if (eventos.Count == 0)
 else
 {
     <div class="table-responsive">
-        <table class="table table-bordered table-hover text-light">
+        <table class="table table-sm table-bordered text-dark tabla-compacta">
+
 
             <thead class="table-dark">
                 <tr>
@@ -46,7 +46,8 @@ else
                     <th>Teléfono</th>
                     <th>Fecha</th>
                     <th>Paciente</th>
-                    <th>Acciones</th>
+                    <th>Estado</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -71,23 +72,41 @@ else
                             <small class="text-light">@evento.FechaHora.ToString("HH:mm:ss")</small>
                         </td>
 
-                        <td class="align-middle">
-                            @if (evento.Pacientes != null && evento.Pacientes.Any())
+                        <td class="text-center align-middle p-0">
+
+                            @if (evento.Pacientes != null && evento.Pacientes.Count > 0)
                             {
-                                @foreach (var p in evento.Pacientes)
-                                {
-                                    <a class="btn btn-sm btn-outline-light me-1"
-                                       title="Datos del paciente"
-                                       href="/paciente/detalle/@p.Id">
-                                        👁️
-                                    </a>
-                                }
+                                <NavLink class="btn btn-sm btn-outline-dark px-1 py-0 text-dark"
+                                         href="@($"/pacientes/{evento.Id}")"
+                                         title="Ver pacientes">
+                                    <i class="fa-solid fa-eye text-dark"></i>
+                                </NavLink>
                             }
                             else
                             {
-                                <span class="text-light">-</span>
+                                <span class="text-dark">–</span>
                             }
                         </td>
+                        <td class="text-center align-middle">
+                            @if (evento.TipoEstado == "Finalizado")
+                            {
+                                <span class="text-muted">@evento.TipoEstado</span>
+                            }
+                            else
+                            {
+                                <select class="form-select form-select-sm text-dark"
+                                        @onchange="e => CambiarEstado(evento.Id, int.Parse(e.Value!.ToString()))">
+                                    @foreach (var estado in estadosDisponibles)
+                                    {
+                                        <option value="@estado.Id" selected="@(estado.Id == evento.TipoEstadoId)">
+                                            @estado.TipoEstado
+                                        </option>
+                                    }
+                                </select>
+                            }
+                        </td>
+
+
 
                         <td class="text-center" style="white-space:nowrap;">
                             <button class="btn btn-sm btn-outline-light me-1"
@@ -120,13 +139,13 @@ else
                     <button type="button" class="btn-close" @onclick="CancelarConfirmacion"></button>
                 </div>
                 <div class="modal-body">
-                  <p>
+                  
 
                         <p>
                             ¿Estás seguro que querés eliminar el evento con código
                             <strong>@(eventoAEliminar?.Codigo ?? "…")</strong>?
                         </p>
-                  </p>
+                  
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CancelarConfirmacion">Cancelar</button>
@@ -152,12 +171,19 @@ else
     EventoListadoDTO? eventoAEliminar;
     bool mostrarModalConfirmacion = false;
 
-
+    // 🔹 Estados disponibles desde el backend
+    List<TipoEstadoListadoDTO> estadosDisponibles = new();
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            var respEstados = await Http.Get<List<TipoEstadoListadoDTO>>("api/tipoEstado/ListaTipoEstado");
+            if (!respEstados.Error)
+            {
+                estadosDisponibles = respEstados.Respuesta ?? new();
+            }
+
             await LeerEventos();
         }
         catch (Exception ex)
@@ -166,6 +192,7 @@ else
             Console.WriteLine($"[InitError] {ex}");
         }
     }
+
 
     private async Task LeerEventos()
     {
@@ -181,15 +208,15 @@ else
             {
                 eventos = resp.Respuesta ?? new List<EventoListadoDTO>();
 
+                // 🔹 Filtrar: excluir los eventos finalizados
                 eventos = eventos
+                    .Where(e => e.TipoEstado != "Finalizado")
                     .OrderBy(e =>
-                     e.colorEvento == ColorEvento.Rojo ? 0 :
-                     e.colorEvento == ColorEvento.Amarillo ? 1 :
-                     e.colorEvento == ColorEvento.Verde ? 2 :
-                     3 // valor por defecto si no coincide con ninguno
-                 )
-                .ToList();
-
+                        e.colorEvento == ColorEvento.Rojo ? 0 :
+                        e.colorEvento == ColorEvento.Amarillo ? 1 :
+                        e.colorEvento == ColorEvento.Verde ? 2 :
+                        3)
+                    .ToList();
             }
             else
             {
@@ -202,6 +229,36 @@ else
             Console.WriteLine($"[Error] {ex}");
         }
     }
+
+    private async Task CambiarEstado(int eventoId, int nuevoEstadoId)
+    {
+        var dto = new ActualizarEstadoEventoDTO { TipoEstadoId = nuevoEstadoId };
+
+        var resp = await Http.Put<ActualizarEstadoEventoDTO, object>(
+            $"api/evento/{eventoId}/estadoEvento", dto);
+
+        if (!resp.Error)
+        {
+            Mensaje = $"Estado del evento {eventoId} actualizado";
+
+            // 🔹 Si es finalizado, lo saco de la lista en memoria
+            var estadoFinalizado = estadosDisponibles.FirstOrDefault(e => e.Id == nuevoEstadoId)?.TipoEstado;
+            if (estadoFinalizado == "Finalizado")
+            {
+                var evento = eventos?.FirstOrDefault(e => e.Id == eventoId);
+                if (evento is not null)
+                {
+                    eventos!.Remove(evento);
+                    StateHasChanged();
+                }
+            }
+        }
+        else
+        {
+            Mensaje = $"Error al cambiar estado: {resp.ObtenerError()}";
+        }
+    }
+
 
     private async Task AlternarVista()
     {
@@ -221,17 +278,13 @@ else
         await LeerEventos();
     }
 
-    
-
     private void SolicitarConfirmacion(EventoListadoDTO evento)
     {
         eventoAEliminar = evento;
         mostrarModalConfirmacion = true;
-        StateHasChanged(); // fuerza el render para que se vea el texto
+        StateHasChanged();
         Console.WriteLine($"Evento seleccionado: {evento.Codigo}");
-
     }
-
 
     private void CancelarConfirmacion()
     {
@@ -257,14 +310,13 @@ else
         mostrarModalConfirmacion = false;
     }
 
-
     private void Editar(int id)
     {
         Nav.NavigateTo($"/eventos/editar/{id}");
     }
 
-    private void IrAGeolocalizacion() 
-    { 
-        Nav.NavigateTo("/geolocalizacion"); 
+    private void IrAGeolocalizacion()
+    {
+        Nav.NavigateTo("/geolocalizacion");
     }
 }

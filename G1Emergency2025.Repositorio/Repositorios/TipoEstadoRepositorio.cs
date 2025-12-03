@@ -25,13 +25,14 @@ namespace G1Emergency2025.Repositorio.Repositorios
         public async Task<List<TipoEstadoListadoDTO>> SelectListaTipoEstado()
         {
             var lista = await context.TipoEstados
-                                    .Select(p => new TipoEstadoListadoDTO
-                                    {
-                                        Id = p.Id,
-                                        TipoEstado = $"Código: {p.Codigo} - Tipo: {p.Tipo}"
-                                    })
-                                    .ToListAsync();
+                                     .Select(p => new TipoEstadoListadoDTO
+                                     {
+                                         Id = p.Id,
+                                         TipoEstado = p.Tipo
+                                     })
+                                     .ToListAsync();
             return lista;
         }
+
     }
 }

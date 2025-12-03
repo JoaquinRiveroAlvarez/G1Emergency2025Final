@@ -324,4 +324,58 @@ tr.bg-primary td {
     margin-right: 8px;
     vertical-align: middle;
 }
+/*tabla mas fina*/
+/* Aplica solo a esta tabla */
+.tabla-compacta td,
+.tabla-compacta th {
+    padding: 0.2rem 0.3rem !important; /* achica vertical y horizontal */
+    font-size: 0.75rem !important; /* texto más chico */
+    white-space: nowrap;
+    vertical-align: middle;
+    line-height: 1 !important;
+}
 
+/* Elimina márgenes entre filas */
+.tabla-compacta tr {
+    margin: 0 !important;
+}
+
+/* Íconos alineados y chicos */
+.tabla-compacta .acciones-btn {
+    display: inline-flex;
+    gap: 0.2rem;
+    align-items: center;
+}
+
+    .tabla-compacta .acciones-btn i {
+        font-size: 0.85rem;
+        color: #eee;
+    }
+
+/* Botones más chicos */
+.tabla-compacta .btn-sm {
+    padding: 0.15rem 0.35rem !important;
+    font-size: 0.7rem !important;
+}
+.botones-eventos {
+    display: flex;
+    align-items: center;
+    gap: 1rem; /* separa los botones */
+}
+
+.icono-mundo i {
+    font-size: 1.8rem; /* tamaño del ícono */
+    color: #0d6efd; /* azul Bootstrap */
+    transition: transform 0.2s ease;
+}
+
+    .icono-mundo i:hover {
+        transform: scale(1.2); /* agranda al pasar el mouse */
+    }
+
+.tabla-compacta td,
+.tabla-compacta th {
+    padding: 0.25rem !important;
+    vertical-align: middle;
+    white-space: nowrap;
+}

@@ -1,0 +1,76 @@
+﻿@page "/pacientes/{eventoId:int}"
+@inject IHttpServicio Http
+
+<h3 class="text-light">Pacientes del Evento @eventoId</h3>
+
+@if (cargando)
+{
+    <div class="alert alert-info">Cargando pacientes...</div>
+}
+else if (evento == null || evento.Pacientes.Count == 0)
+{
+    <div class="alert alert-warning">No se encontraron pacientes para este evento.</div>
+}
+else
+{
+    <div class="mb-3">
+        <p><strong>Código:</strong> @evento.Codigo</p>
+        <p><strong>Ubicación:</strong> @evento.Ubicacion</p>
+        <p><strong>Teléfono:</strong> @evento.Telefono</p>
+        <p><strong>Fecha:</strong> @evento.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Causa:</strong> @evento.Causa</p>
+        <p><strong>Estado:</strong> @evento.TipoEstado</p>
+    </div>
+
+    <table class="table table-sm table-striped tabla-compacta">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>DNI</th>
+                <th>Edad</th>
+                <th>Obra Social</th>
+                <th>Diagnóstico</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in evento.Pacientes)
+            {
+                <tr>
+                    <td>@p.NombrePersona</td>
+                    <td>@p.DNIPersona</td>
+                    <td>@p.EdadPersona</td>
+                    <td>@p.ObraSocial</td>
+                    <td>@p.DiagnosticoPresuntivo</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <NavLink class="btn btn-secondary mt-3" href="/eventos">
+        <i class="bi bi-arrow-left"></i> Volver a eventos
+    </NavLink>
+
+}
+
+@code {
+    [Parameter] public int eventoId { get; set; }
+
+    private EventoDiagPresuntivoListadoDTO? evento;
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resp = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>("api/evento/ListaEventoCompleto");
+
+        if (!resp.Error && resp.Respuesta != null)
+        {
+            evento = resp.Respuesta.FirstOrDefault(e => e.Id == eventoId);
+            Console.WriteLine($"Evento {eventoId} tiene {evento?.Pacientes.Count} pacientes");
+        }
+        else
+        {
+            Console.WriteLine("Error al cargar eventos: " + resp.ObtenerError());
+        }
+
+        cargando = false;
+    }
+}
