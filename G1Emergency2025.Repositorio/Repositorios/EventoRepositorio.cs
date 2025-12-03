@@ -34,7 +34,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
             this.movilRepo = movilRepo;
         }
         
-        public async Task<List<EventoListadoDTO>> SelectPorTipoEstado(int estadoEventoId)
+        public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId)
         {
             var lista = await context.Eventos
 
@@ -50,7 +50,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
             .Include(e => e.Causa)
             .Where(e => e.TipoEstadoId == estadoEventoId)
 
-            .Select(e => new EventoListadoDTO
+            .Select(e => new EventoDiagPresuntivoListadoDTO
             {
                 Id = e.Id,
                 Codigo = e.Codigo,
@@ -62,7 +62,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 TipoEstado = e.TipoEstados!.Tipo,
                 TipoEstadoId = e.TipoEstadoId,
                 Pacientes = e.PacienteEventos
-                    .Select(pe => new PacienteResumenDTO
+                    .Select(pe => new PacienteDiagPresuntivoDTO
                     {
                         Id = pe.PacienteId,
                         ObraSocial = pe.Pacientes!.ObraSocial,
@@ -71,7 +71,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         DireccionPersona = pe.Pacientes!.Persona.Direccion,
                         SexoPersona = pe.Pacientes.Persona.Sexo,
                         EdadPersona = pe.Pacientes.Persona.Edad,
-                        HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
                     }).ToList(),
 
                 Usuarios = e.EventoUsuarios
@@ -104,7 +105,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
             .ToListAsync();
             return lista;
         }
-        public async Task<List<EventoListadoDTO>> SelectPorNombrePaciente(string nombrePaciente)
+        public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorNombrePaciente(string nombrePaciente)
         {
             var lista = await context.Eventos
 
@@ -126,7 +127,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
 
 
-            .Select(e => new EventoListadoDTO
+            .Select(e => new EventoDiagPresuntivoListadoDTO
             {
                 Id = e.Id,
                 Codigo = e.Codigo,
@@ -138,7 +139,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 TipoEstado = e.TipoEstados!.Tipo,
                 TipoEstadoId = e.TipoEstadoId,
                 Pacientes = e.PacienteEventos
-                    .Select(pe => new PacienteResumenDTO
+                    .Select(pe => new PacienteDiagPresuntivoDTO
                     {
                         Id = pe.PacienteId,
                         ObraSocial = pe.Pacientes!.ObraSocial,
@@ -147,7 +148,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         DireccionPersona = pe.Pacientes!.Persona.Direccion,
                         SexoPersona = pe.Pacientes.Persona.Sexo,
                         EdadPersona = pe.Pacientes.Persona.Edad,
-                        HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
                     }).ToList(),
 
                 Usuarios = e.EventoUsuarios
@@ -330,9 +332,36 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             }).ToList();
         }
+        public async Task<EventoPacienteDiagPresuntivoResumenDTO?> SelectEventoConPacientePorId(int id)
+        {
+            return await context.Eventos
 
+            .Include(e => e.PacienteEventos)
+                .ThenInclude(pe => pe.Pacientes)
+            .Where(e => e.Id == id)
 
-        public async Task<EventoListadoDTO?> SelectPorCod(string cod)
+            .Select(e => new EventoPacienteDiagPresuntivoResumenDTO
+            {
+                Id = e.Id,
+                Codigo = e.Codigo,
+                Pacientes = e.PacienteEventos
+                    .Select(pe => new PacienteDiagPresuntivoDTO
+                    {
+                        Id = pe.PacienteId,
+                        ObraSocial = pe.Pacientes!.ObraSocial,
+                        NombrePersona = pe.Pacientes.Persona!.Nombre,
+                        DNIPersona = pe.Pacientes.Persona.DNI,
+                        DireccionPersona = pe.Pacientes!.Persona.Direccion,
+                        SexoPersona = pe.Pacientes.Persona.Sexo,
+                        EdadPersona = pe.Pacientes.Persona.Edad,
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                    }).ToList(),
+            })
+            .FirstOrDefaultAsync();
+        }
+
+        public async Task<EventoDiagPresuntivoListadoDTO?> SelectPorCod(string cod)
         {
             return await context.Eventos
                 .Include(e => e.PacienteEventos)
@@ -347,7 +376,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .Include(e => e.Causa)
                 .Where(e => e.Codigo == cod)
 
-                .Select(e => new EventoListadoDTO
+                .Select(e => new EventoDiagPresuntivoListadoDTO
                 {
                     Id = e.Id,
                     Codigo = e.Codigo,
@@ -359,7 +388,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     TipoEstado = e.TipoEstados!.Tipo,
                     TipoEstadoId = e.TipoEstadoId,
                     Pacientes = e.PacienteEventos
-                        .Select(pe => new PacienteResumenDTO
+                        .Select(pe => new PacienteDiagPresuntivoDTO
                         {
                             Id = pe.PacienteId,
                             ObraSocial = pe.Pacientes!.ObraSocial,
@@ -368,7 +397,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                             DireccionPersona = pe.Pacientes!.Persona!.Direccion,
                             SexoPersona = pe.Pacientes!.Persona!.Sexo,
                             EdadPersona = pe.Pacientes!.Persona!.Edad,
-                            HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                            HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                            DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
                         }).ToList(),
 
                     Usuarios = e.EventoUsuarios
@@ -553,13 +583,10 @@ namespace G1Emergency2025.Repositorio.Repositorios
             return lista;
         }
 
-        public async Task<List<EventoListadoDTO>> SelectListaEventoConDisponibilidad()
+        public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectListaEventoCompleto()
         {
-            var hace24hs = DateTime.Now.AddHours(-24);
-
             var lista = await context.Eventos
-
-                .Where(e => e.FechaHora >= hace24hs)
+                .Where(e => e.TipoEstados!.Codigo == "01" && e.EstadoRegistro == EnumEstadoRegistro.activo)
                 .Include(e => e.PacienteEventos)
                    .ThenInclude(pe => pe.Pacientes)
                    .ThenInclude(p => p!.Persona)
@@ -572,7 +599,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .Include(e => e.EventoMovils)
                    .ThenInclude(em => em.Movil)
                    .ThenInclude(m => m!.TipoMovils)
-                .Select(e => new EventoListadoDTO
+                .Select(e => new EventoDiagPresuntivoListadoDTO
                 {
                     Id = e.Id,
                     Codigo = e.Codigo,
@@ -583,8 +610,9 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     Causa = e.Causa!.posibleCausa,
                     TipoEstado = e.TipoEstados!.Tipo,
                     TipoEstadoId = e.TipoEstadoId,
+
                     Pacientes = e.PacienteEventos
-                    .Select(pe => new PacienteResumenDTO
+                    .Select(pe => new PacienteDiagPresuntivoDTO
                     {
                         Id = pe.PacienteId,
                         ObraSocial = pe.Pacientes!.ObraSocial,
@@ -593,7 +621,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         DireccionPersona = pe.Pacientes!.Persona.Direccion,
                         SexoPersona = pe.Pacientes.Persona.Sexo,
                         EdadPersona = pe.Pacientes.Persona.Edad,
-                        HistoriaClinica = pe.Pacientes!.HistoriaClinica
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
                     }).ToList(),
 
                     Usuarios = e.EventoUsuarios
@@ -627,7 +656,81 @@ namespace G1Emergency2025.Repositorio.Repositorios
             return lista;
         }
 
+        public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectListaEventoRecienteCompleto()
+        {
+            var hace24hs = DateTime.Now.AddHours(-24);
 
+            var lista = await context.Eventos
+
+                .Where(e => e.FechaHora >= hace24hs && e.TipoEstados!.Codigo == "01" && e.EstadoRegistro == EnumEstadoRegistro.activo)
+                .Include(e => e.PacienteEventos)
+                   .ThenInclude(pe => pe.Pacientes)
+                   .ThenInclude(p => p!.Persona)
+                .Include(e => e.EventoUsuarios)
+                   .ThenInclude(eu => eu.Usuarios)
+                .Include(e => e.EventoLugarHechos)
+                   .ThenInclude(elh => elh.LugarHecho)
+                .Include(e => e.TipoEstados)
+                .Include(e => e.Causa)
+                .Include(e => e.EventoMovils)
+                   .ThenInclude(em => em.Movil)
+                   .ThenInclude(m => m!.TipoMovils)
+                .Select(e => new EventoDiagPresuntivoListadoDTO
+                {
+                    Id = e.Id,
+                    Codigo = e.Codigo,
+                    colorEvento = e.colorEvento,
+                    Ubicacion = e.Ubicacion,
+                    Telefono = e.Telefono,
+                    FechaHora = e.FechaHora,
+                    Causa = e.Causa!.posibleCausa,
+                    TipoEstado = e.TipoEstados!.Tipo,
+                    TipoEstadoId = e.TipoEstadoId,
+
+                    Pacientes = e.PacienteEventos
+                    .Select(pe => new PacienteDiagPresuntivoDTO
+                    {
+                        Id = pe.PacienteId,
+                        ObraSocial = pe.Pacientes!.ObraSocial,
+                        NombrePersona = pe.Pacientes.Persona!.Nombre,
+                        DNIPersona = pe.Pacientes.Persona.DNI,
+                        DireccionPersona = pe.Pacientes!.Persona.Direccion,
+                        SexoPersona = pe.Pacientes.Persona.Sexo,
+                        EdadPersona = pe.Pacientes.Persona.Edad,
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                    }).ToList(),
+
+                    Usuarios = e.EventoUsuarios
+                    .Select(eu => new UsuarioResumenDTO
+                    {
+                        Id = eu.UsuarioId,
+                        Nombre = eu.Usuarios!.Nombre,
+                        Contrasena = eu.Usuarios.Contrasena
+                    }).ToList(),
+
+                    Lugares = e.EventoLugarHechos
+                    .Select(elh => new LugarHechoResumenDTO
+                    {
+                        Id = elh.LugarHecho!.Id,
+                        Codigo = elh.LugarHecho.Codigo,
+                        Tipo = elh.LugarHecho.Tipo,
+                        Descripcion = elh.LugarHecho.Descripcion
+                    }).ToList(),
+
+                    Moviles = e.EventoMovils.Select(em => new MovilResumenDTO
+                    {
+                        Id = em.Movil!.Id,
+                        Patente = em.Movil.Patente,
+                        TipoMovil = em.Movil.TipoMovils!.Tipo,
+                        disponibilidadMovil = em.Movil.disponibilidadMovil
+                    }).ToList()
+                })
+                .OrderBy(e => e.FechaHora)
+                .ToListAsync();
+
+            return lista;
+        }
         public async Task<int> InsertarEvento(EventoDTO dto)
         {
 

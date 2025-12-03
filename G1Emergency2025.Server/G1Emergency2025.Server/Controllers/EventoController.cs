@@ -62,10 +62,19 @@ namespace Proyecto2025.Server.Controllers
             return Ok(eventos);
         }
 
-        [HttpGet("ListaEventoConMovil")]
-        public async Task<IActionResult> GetListaEventoConMovil()
+        [HttpGet("ListaEventoCompleto")]
+        public async Task<ActionResult> GetListaEventoCompleto()
         {
-            var lista = await repositorio.SelectListaEventoConDisponibilidad();
+            var lista = await repositorio.SelectListaEventoCompleto();
+            if (lista == null || !lista.Any())
+                return NotFound("No hay eventos registrados.");
+
+            return Ok(lista);
+        }
+        [HttpGet("ListaEventoRecienteCompleto")]
+        public async Task<ActionResult> GetListaEventoRecienteCompleto()
+        {
+            var lista = await repositorio.SelectListaEventoRecienteCompleto();
             if (lista == null || !lista.Any())
                 return NotFound("No hay eventos registrados.");
 
@@ -73,7 +82,7 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("EventoPorCodigo/{cod}")]
-        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoCodigo(string cod)
+        public async Task<ActionResult<List<EventoDiagPresuntivoListadoDTO>>> GetEventoCodigo(string cod)
         {
             var lista = await repositorio.SelectPorCod(cod);
             if (lista == null)
@@ -82,8 +91,20 @@ namespace Proyecto2025.Server.Controllers
             }
             return Ok(lista);
         }
+
+        [HttpGet("EventoPacientePorId/{id}")]
+        public async Task<ActionResult<EventoPacienteDiagPresuntivoResumenDTO>> GetEventoPacientePorId(int id)
+        {
+            var lista = await repositorio.SelectEventoConPacientePorId(id);
+            if (lista == null)
+            {
+                return NotFound($"No se encontro elementos en la lista con el código: {id}.");
+            }
+            return Ok(lista);
+        }
+
         [HttpGet("EventoPorNombrePaciente")]
-        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoNombrePaciente([FromQuery] string nombre)
+        public async Task<ActionResult<List<EventoDiagPresuntivoListadoDTO>>> GetEventoNombrePaciente([FromQuery] string nombre)
         {
             var lista = await repositorio.SelectPorNombrePaciente(nombre);
             if (lista == null || lista.Count == 0)
@@ -94,7 +115,7 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("EventoPorEstado/{estado}")]
-        public async Task<ActionResult<List<EventoListadoDTO>>> GetEventoEstado(int estado)
+        public async Task<ActionResult<List<EventoDiagPresuntivoListadoDTO>>> GetEventoEstado(int estado)
         {
             var lista = await repositorio.SelectPorTipoEstado(estado);
             if (lista == null)
