@@ -182,6 +182,80 @@ namespace G1Emergency2025.Repositorio.Repositorios
             .ToListAsync();
             return lista;
         }
+        public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorHistoriaClinicaPaciente(string historiaClinica)
+        {
+            var lista = await context.Eventos
+
+            .Include(e => e.PacienteEventos)
+                .ThenInclude(pe => pe.Pacientes)
+                .ThenInclude(p => p.Persona)
+            .Include(e => e.EventoUsuarios)
+                .ThenInclude(eu => eu.Usuarios)
+            .Include(e => e.EventoLugarHechos)
+                .ThenInclude(elh => elh.LugarHecho)
+            .Include(e => e.EventoMovils)
+                .ThenInclude(em => em.Movil)
+            .Include(e => e.TipoEstados)
+            .Include(e => e.Causa)
+            .Where(e => e.PacienteEventos
+            .Any(pe => pe.Pacientes!.HistoriaClinica == historiaClinica))
+
+
+            .Select(e => new EventoDiagPresuntivoListadoDTO
+            {
+                Id = e.Id,
+                Codigo = e.Codigo,
+                colorEvento = e.colorEvento,
+                Ubicacion = e.Ubicacion,
+                Telefono = e.Telefono,
+                FechaHora = e.FechaHora,
+                Causa = e.Causa!.posibleCausa,
+                TipoEstado = e.TipoEstados!.Tipo,
+                TipoEstadoId = e.TipoEstadoId,
+                Pacientes = e.PacienteEventos
+                    .Select(pe => new PacienteDiagPresuntivoDTO
+                    {
+                        Id = pe.PacienteId,
+                        ObraSocial = pe.Pacientes!.ObraSocial,
+                        NombrePersona = pe.Pacientes.Persona!.Nombre,
+                        DNIPersona = pe.Pacientes.Persona.DNI,
+                        DireccionPersona = pe.Pacientes!.Persona.Direccion,
+                        SexoPersona = pe.Pacientes.Persona.Sexo,
+                        EdadPersona = pe.Pacientes.Persona.Edad,
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                    }).ToList(),
+
+                Usuarios = e.EventoUsuarios
+                    .Select(eu => new UsuarioResumenDTO
+                    {
+                        Id = eu.UsuarioId,
+                        Nombre = eu.Usuarios!.Nombre,
+                        Contrasena = eu.Usuarios.Contrasena
+                    }).ToList(),
+
+                Lugares = e.EventoLugarHechos
+                    .Select(elh => new LugarHechoResumenDTO
+                    {
+                        Id = elh.LugarHecho!.Id,
+                        Codigo = elh.LugarHecho.Codigo,
+                        Tipo = elh.LugarHecho.Tipo,
+                        Descripcion = elh.LugarHecho.Descripcion
+                    }).ToList(),
+
+                Moviles = e.EventoMovils.Select(em => new MovilResumenDTO
+                {
+                    Id = em.Movil!.Id,
+                    Patente = em.Movil.Patente,
+                    TipoMovil = em.Movil.TipoMovils!.Tipo,
+                    disponibilidadMovil = em.Movil.disponibilidadMovil
+                }).ToList()
+
+            })
+            .OrderBy(e => e.FechaHora)
+            .ToListAsync();
+            return lista;
+        }
         //public async Task<List<EventoListadoDTO>> SelectPorHistoriaClinicaPaciente(string historiaClinica)
         //{
         //    var lista = await context.Eventos
@@ -846,8 +920,10 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     }
                     await context.SaveChangesAsync();
                 }
+                if (dto.PacienteIds != null)
+                    foreach (var pid in dto.PacienteIds)
+                        await pacienteRepo.AsociarEvento(pid, evento.Id, "Sin Diagnostico");
 
-                // 3. Asociar otros elementos (usuarios, lugares, móviles)
                 if (dto.UsuarioIds != null)
                     foreach (var uid in dto.UsuarioIds)
                         await usuarioRepo.AsociarEvento(uid, evento.Id);

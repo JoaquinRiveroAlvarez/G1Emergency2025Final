@@ -17,33 +17,6 @@ namespace Proyecto2025.Server.Controllers
         {
             this.repositorio = repositorio;
         }
-        [HttpGet]
-        public async Task<ActionResult<List<EventoDTO>>> GetList()
-        {
-            var lista = await repositorio.Select();
-            if (lista == null)
-            {
-                return NotFound("No se encontro la lista, VERIFICAR.");
-            }
-            if (lista.Count == 0)
-            {
-                return Ok("No existen items en la lista en este momento");
-            }
-    
-            return Ok(lista);
-        }
-
-        [HttpGet("Id/{id:int}")]
-        public async Task<ActionResult<EventoListadoDTO>> GetById(int id)
-        {
-            var tipoProvincia = await repositorio.SelectById(id);
-            if (tipoProvincia is null)
-            {
-                return NotFound($"No existe el registro con el id: {id}.");
-            }
-
-            return Ok(tipoProvincia);
-        }
 
         [HttpGet("ListaEvento")]
         public async Task<IActionResult> GetListaEvento()
@@ -99,6 +72,17 @@ namespace Proyecto2025.Server.Controllers
             if (lista == null)
             {
                 return NotFound($"No se encontro elementos en la lista con el código: {id}.");
+            }
+            return Ok(lista);
+        }
+
+        [HttpGet("ListaEventoPorHistoriaClinicaPaciente/{historiaClinica}")]
+        public async Task<ActionResult<List<EventoDiagPresuntivoListadoDTO>>> GetListaEventoPorHistoriaClinicaPaciente(string historiaClinica)
+        {
+            var lista = await repositorio.SelectPorHistoriaClinicaPaciente(historiaClinica);
+            if (lista == null)
+            {
+                return NotFound($"No se encontro elementos en la lista con la historia clinica: {historiaClinica}.");
             }
             return Ok(lista);
         }
