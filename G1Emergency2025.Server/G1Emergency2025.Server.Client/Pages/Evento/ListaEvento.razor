@@ -5,8 +5,8 @@
 
 <h3 class="text-light">Lista de Eventos</h3>
 
-<div class="mb-3">
-    <a class="btn btn-danger me-2"
+<div class="mb-3 d-flex align-items-center gap-3">
+    <a class="btn btn-danger"
        href="/eventos/crear"
        title="Nuevo Evento">
         +
@@ -19,8 +19,11 @@
                 : "Ver historial")
     </button>
 
-    <button type="button" class="btn btn-primary" @onclick="IrAGeolocalizacion"> Geolocalización </button>
+    <NavLink href="/geolocalizacion" title="Geolocalización" class="text-primary fs-4">
+        <i class="fas fa-earth-americas"></i>
+    </NavLink>
 </div>
+
 
 @if (eventos == null)
 {
