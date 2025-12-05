@@ -1,7 +1,8 @@
 ﻿@page "/pacientes/{eventoId:int}"
 @inject IHttpServicio Http
 
-<h3 class="text-light">Pacientes del Evento @eventoId</h3>
+<h3 class="text-light">Paciente del evento @evento?.Codigo</h3>
+
 
 @if (cargando)
 {
@@ -13,38 +14,26 @@ else if (evento == null || evento.Pacientes.Count == 0)
 }
 else
 {
-    <div class="mb-3">
-        <p><strong>Código:</strong> @evento.Codigo</p>
-        <p><strong>Ubicación:</strong> @evento.Ubicacion</p>
-        <p><strong>Teléfono:</strong> @evento.Telefono</p>
-        <p><strong>Fecha:</strong> @evento.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
-        <p><strong>Causa:</strong> @evento.Causa</p>
-        <p><strong>Estado:</strong> @evento.TipoEstado</p>
-    </div>
+   
 
-    <table class="table table-sm table-striped tabla-compacta">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>DNI</th>
-                <th>Edad</th>
-                <th>Obra Social</th>
-                <th>Diagnóstico</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in evento.Pacientes)
-            {
-                <tr>
-                    <td>@p.NombrePersona</td>
-                    <td>@p.DNIPersona</td>
-                    <td>@p.EdadPersona</td>
-                    <td>@p.ObraSocial</td>
-                    <td>@p.DiagnosticoPresuntivo</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @foreach (var p in evento.Pacientes)
+    {
+        
+        
+            <div class="card bg-white text-dark mb-3" style="max-width: 500px; font-size: 1rem;">
+                <div class="card-body py-3 px-4">
+                    <p class="mb-2"><strong>Nombre:</strong> @p.NombrePersona</p>
+                    <p class="mb-2"><strong>DNI:</strong> @p.DNIPersona</p>
+                    <p class="mb-2"><strong>Edad:</strong> @p.EdadPersona</p>
+                    <p class="mb-2"><strong>Obra Social:</strong> @p.ObraSocial</p>
+                    <p class="mb-2"><strong>Diagnóstico:</strong> @p.DiagnosticoPresuntivo</p>
+                </div>
+            </div>
+        
+
+    }
+
+
     <NavLink class="btn btn-secondary mt-3" href="/eventos">
         <i class="bi bi-arrow-left"></i> Volver a eventos
     </NavLink>
