@@ -8,5 +8,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
         Task<Usuario?> SelectByCod(string cod);
         Task<List<UsuarioListadoDTO>> SelectListaUsuario();
         Task AsociarEvento(int usuarioId, int eventoId);
+        Task<Usuario?> ObtenerUsuarioAleatorio();
     }
 }

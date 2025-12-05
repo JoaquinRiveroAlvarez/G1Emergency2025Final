@@ -20,11 +20,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
         private readonly IUsuarioRepositorio usuarioRepo;
         private readonly ILugarHechoRepositorio lugarHechoRepo;
         private readonly IMovilRepositorio movilRepo;
+        private readonly IHistorialEventoRepositorio historialEventoRepo;
 
         public EventoRepositorio(AppDbContext context,
         IPacienteRepositorio pacienteRepo,
         IUsuarioRepositorio usuarioRepo,
         ILugarHechoRepositorio lugarHechoRepo,
+        IHistorialEventoRepositorio historialEventoRepo,
         IMovilRepositorio movilRepo) : base(context)
         {
             this.context = context;
@@ -32,6 +34,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
             this.usuarioRepo = usuarioRepo;
             this.lugarHechoRepo = lugarHechoRepo;
             this.movilRepo = movilRepo;
+            this.historialEventoRepo = historialEventoRepo;
         }
         
         public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId)
@@ -326,7 +329,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         //    .ToListAsync();
         //    return lista;
         //}
-        public async Task<List<EventoListadoDTO>> SelectPorFechaFlexible(
+        public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorFechaFlexible(
                     int? anio = null,
                     int? mes = null,
                     int? dia = null,
@@ -358,10 +361,11 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             var eventos = await query.ToListAsync();
 
-            return eventos.Select(e => new EventoListadoDTO
+            return eventos.Select(e => new EventoDiagPresuntivoListadoDTO
             {
                 Id = e.Id,
                 Codigo = e.Codigo,
+                Relato = e.Relato,
                 colorEvento = e.colorEvento,
                 Ubicacion = e.Ubicacion,
                 Telefono = e.Telefono,
@@ -369,7 +373,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 Causa = e.Causa!.posibleCausa,
                 TipoEstado = e.TipoEstados!.Tipo,
                 TipoEstadoId = e.TipoEstadoId,
-                Pacientes = e.PacienteEventos.Select(pe => new PacienteResumenDTO
+                Pacientes = e.PacienteEventos.Select(pe => new PacienteDiagPresuntivoDTO
                 {
                     Id = pe.PacienteId,
                     ObraSocial = pe.Pacientes!.ObraSocial,
@@ -454,6 +458,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 {
                     Id = e.Id,
                     Codigo = e.Codigo,
+                    Relato = e.Relato,
                     colorEvento = e.colorEvento,
                     Ubicacion = e.Ubicacion,
                     Telefono = e.Telefono,
@@ -674,10 +679,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .Include(e => e.EventoMovils)
                    .ThenInclude(em => em.Movil)
                    .ThenInclude(m => m!.TipoMovils)
+                .Include(e => e.HistorialEventos)
+                   .ThenInclude(u => u.Usuario)
                 .Select(e => new EventoDiagPresuntivoListadoDTO
                 {
                     Id = e.Id,
                     Codigo = e.Codigo,
+                    Relato = e.Relato,
                     colorEvento = e.colorEvento,
                     Ubicacion = e.Ubicacion,
                     Telefono = e.Telefono,
@@ -717,12 +725,24 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         Descripcion = elh.LugarHecho.Descripcion
                     }).ToList(),
 
-                    Moviles = e.EventoMovils.Select(em => new MovilResumenDTO
+                    Moviles = e.EventoMovils
+                    .Select(em => new MovilResumenDTO
                     {
                         Id = em.Movil!.Id,
                         Patente = em.Movil.Patente,
                         TipoMovil = em.Movil.TipoMovils!.Tipo,
                         disponibilidadMovil = em.Movil.disponibilidadMovil
+                    }).ToList(),
+
+                    Historial = e.HistorialEventos
+                    .GroupBy(h => h.UsuarioId)
+                    .Select(g => new HistorialEventoDTO
+                    {
+                        UsuarioId = g.Key,
+                        UsuarioNombre = g.First().Usuario!.Nombre,
+                        CreoEvento = g.Any(x => x.CreoEvento),
+                        ModificoEvento = g.Any(x => x.ModificoEvento),
+                        CantidadModificaciones = g.Count(x => x.ModificoEvento)
                     }).ToList()
                 })
                 .OrderBy(e => e.FechaHora)
@@ -750,10 +770,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .Include(e => e.EventoMovils)
                    .ThenInclude(em => em.Movil)
                    .ThenInclude(m => m!.TipoMovils)
+                .Include(e => e.HistorialEventos)
+                   .ThenInclude(u => u.Usuario)
                 .Select(e => new EventoDiagPresuntivoListadoDTO
                 {
                     Id = e.Id,
                     Codigo = e.Codigo,
+                    Relato = e.Relato,
                     colorEvento = e.colorEvento,
                     Ubicacion = e.Ubicacion,
                     Telefono = e.Telefono,
@@ -799,6 +822,16 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         Patente = em.Movil.Patente,
                         TipoMovil = em.Movil.TipoMovils!.Tipo,
                         disponibilidadMovil = em.Movil.disponibilidadMovil
+                    }).ToList(),
+                    Historial = e.HistorialEventos
+                    .GroupBy(h => new { h.UsuarioId, h.Usuario!.Nombre })
+                    .Select(g => new HistorialEventoDTO
+                    {
+                        UsuarioId = g.Key.UsuarioId,
+                        UsuarioNombre = g.Key.Nombre,
+                        CreoEvento = g.Any(x => x.CreoEvento),
+                        ModificoEvento = g.Any(x => x.ModificoEvento),
+                        CantidadModificaciones = g.Count(x => x.ModificoEvento)
                     }).ToList()
                 })
                 .OrderBy(e => e.FechaHora)
@@ -808,56 +841,69 @@ namespace G1Emergency2025.Repositorio.Repositorios
         }
         public async Task<int> InsertarEvento(EventoDTO dto)
         {
-
-            var evento = new Evento
-            {
-                Relato = dto.Relato,
-                Codigo = await GenerarCodigoUnicoAsync(),
-                colorEvento = dto.colorEvento,
-                Ubicacion = dto.Ubicacion,
-                Telefono = dto.Telefono,
-                FechaHora = dto.FechaHora,
-                CausaId = dto.CausaId,
-                TipoEstadoId = dto.TipoEstadoId,
-                EstadoRegistro = EnumEstadoRegistro.activo
-            };
-
-            context.Eventos.Add(evento);
+            using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                await context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-
-            {
-                // Si hubo colisión de código, regenerar y reintentar
-                if (ex.InnerException?.Message.Contains("Evento_UQ") == true)
+                var evento = new Evento
                 {
-                    evento.Codigo = await GenerarCodigoUnicoAsync();
+                    Relato = dto.Relato,
+                    Codigo = await GenerarCodigoUnicoAsync(),
+                    colorEvento = dto.colorEvento,
+                    Ubicacion = dto.Ubicacion,
+                    Telefono = dto.Telefono,
+                    FechaHora = dto.FechaHora,
+                    CausaId = dto.CausaId,
+                    TipoEstadoId = dto.TipoEstadoId,
+                    EstadoRegistro = EnumEstadoRegistro.activo
+                };
+
+                context.Eventos.Add(evento);
+                try
+                {
                     await context.SaveChangesAsync();
                 }
-                else
+                catch (DbUpdateException ex)
+
                 {
-                    throw;
+                    // Si hubo colisión de código, regenerar y reintentar
+                    if (ex.InnerException?.Message.Contains("Evento_UQ") == true)
+                    {
+                        evento.Codigo = await GenerarCodigoUnicoAsync();
+                        await context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
+                var usuarioAleatorio = await usuarioRepo.ObtenerUsuarioAleatorio();
+                if (usuarioAleatorio != null)
+                {
+                    await historialEventoRepo.RegistrarCreacionEvento(evento.Id, usuarioAleatorio.Id);
+                }
+
+                if (dto.PacienteIds != null)
+                    foreach (var pid in dto.PacienteIds)
+                        await pacienteRepo.AsociarEvento(pid, evento.Id, "Sin Diagnostico");
+
+                if (dto.UsuarioIds != null)
+                    foreach (var uid in dto.UsuarioIds)
+                        await usuarioRepo.AsociarEvento(uid, evento.Id);
+
+                if (dto.LugarHechoIds != null)
+                    foreach (var lid in dto.LugarHechoIds)
+                        await lugarHechoRepo.AsociarEvento(lid, evento.Id);
+                if (dto.MovilIds != null)
+                    foreach (var mid in dto.MovilIds)
+                        await movilRepo.AsociarEvento(mid, evento.Id);
+
+                return evento.Id;
             }
-
-            if (dto.PacienteIds != null)
-                foreach (var pid in dto.PacienteIds)
-                    await pacienteRepo.AsociarEvento(pid, evento.Id, "Sin Diagnostico");
-
-            if (dto.UsuarioIds != null)
-                foreach (var uid in dto.UsuarioIds)
-                    await usuarioRepo.AsociarEvento(uid, evento.Id);
-
-            if (dto.LugarHechoIds != null)
-                foreach (var lid in dto.LugarHechoIds)
-                    await lugarHechoRepo.AsociarEvento(lid, evento.Id);
-            if (dto.MovilIds != null)
-                foreach (var mid in dto.MovilIds)
-                    await movilRepo.AsociarEvento(mid, evento.Id);
-
-            return evento.Id;
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<int> InsertarEventoPaciente(EventoCrearDTO dto)
@@ -938,6 +984,11 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         await movilRepo.AsociarEvento(mid, evento.Id);
 
                 // 4. Confirmar transacción
+                var usuarioAleatorio = await usuarioRepo.ObtenerUsuarioAleatorio();
+                if (usuarioAleatorio != null)
+                {
+                    await historialEventoRepo.RegistrarCreacionEvento(evento.Id, usuarioAleatorio.Id);
+                }
                 await transaction.CommitAsync();
                 return evento.Id;
             }
@@ -1159,6 +1210,12 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 }
 
                 await context.SaveChangesAsync();
+
+                var usuarioAleatorio = await usuarioRepo.ObtenerUsuarioAleatorio();
+                if (usuarioAleatorio != null)
+                {
+                    await historialEventoRepo.RegistrarModificacionEvento(evento.Id, usuarioAleatorio.Id);
+                }
 
                 // 5. Confirmar transacción
                 await transaction.CommitAsync();

@@ -43,5 +43,6 @@ namespace G1Emergency2025.BD.Datos.Entity
 
         public List<EventoUsuario> EventoUsuarios { get; set; } = new();
         public List<EventoMovil> EventoMovils { get; set; } = new();
+        public List<HistorialEvento> HistorialEventos { get; set; } = new();
     }
 }

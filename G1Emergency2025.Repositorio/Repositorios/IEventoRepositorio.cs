@@ -12,7 +12,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorHistoriaClinicaPaciente(string historiaClinica);
         Task<EventoPacienteDiagPresuntivoResumenDTO?> SelectEventoConPacientePorId(int id);
         Task<EventoDiagPresuntivoListadoDTO?> SelectPorCod(string cod);
-        Task<List<EventoListadoDTO>> SelectPorFechaFlexible(int? anio = null, int? mes = null, int? dia = null, int? hora = null);
+        Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorFechaFlexible(int? anio = null, int? mes = null, int? dia = null, int? hora = null);
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectListaEventoCompleto();
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectListaEventoRecienteCompleto();
         Task<int> InsertarEvento(EventoDTO dto);

@@ -11,6 +11,7 @@ namespace G1Emergency2025.Shared.DTO
     {
         public int Id { get; set; }
         public string Codigo { get; set; } = string.Empty;
+        public string Relato { get; set; } = string.Empty;
         public ColorEvento colorEvento { get; set; }
         public string Ubicacion { get; set; } = string.Empty;
         public string Telefono { get; set; } = string.Empty;
@@ -22,5 +23,6 @@ namespace G1Emergency2025.Shared.DTO
         public List<UsuarioResumenDTO> Usuarios { get; set; } = new();
         public List<LugarHechoResumenDTO> Lugares { get; set; } = new();
         public List<MovilResumenDTO> Moviles { get; set; } = new();
+        public List<HistorialEventoDTO> Historial { get; set; } = new();
     }
 }

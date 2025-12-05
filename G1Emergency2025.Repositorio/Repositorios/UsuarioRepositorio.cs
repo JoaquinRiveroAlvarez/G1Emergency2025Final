@@ -44,6 +44,12 @@ namespace G1Emergency2025.Repositorio.Repositorios
             context.EventoUsuarios.Add(rel);
             await context.SaveChangesAsync();
         }
+        public async Task<Usuario?> ObtenerUsuarioAleatorio()
+        {
+            return await context.Usuarios
+                .OrderBy(u => Guid.NewGuid())
+                .FirstOrDefaultAsync();
+        }
 
     }
 }

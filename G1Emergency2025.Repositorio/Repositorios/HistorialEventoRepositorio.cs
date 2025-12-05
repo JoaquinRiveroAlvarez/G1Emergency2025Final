@@ -13,15 +13,16 @@ namespace G1Emergency2025.Repositorio.Repositorios
     public class HistorialEventoRepositorio : Repositorio<HistorialEvento>, IHistorialEventoRepositorio
     {
         private readonly AppDbContext context;
+
         public HistorialEventoRepositorio(AppDbContext context) : base(context)
         {
             this.context = context;
         }
-        public async Task<HistorialEvento?> SelectById(int id)
-        {
-            HistorialEvento? entidad = await context.HistorialEventos.FirstOrDefaultAsync(x => x.Id == id);
-            return entidad;
-        }
+        //public async Task<HistorialEvento?> SelectById(int id)
+        //{
+        //    HistorialEvento? entidad = await context.HistorialEventos.FirstOrDefaultAsync(x => x.Id == id);
+        //    return entidad;
+        //}
         public async Task<List<HistorialEventoListadoDTO?>> SelectListaHistorialEvento()
         {
             var lista = await context.HistorialEventos
@@ -58,7 +59,33 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     ModificoEvento = p.ModificoEvento
                 })
                 .FirstOrDefaultAsync();
-        }   
+        }
+        public async Task RegistrarCreacionEvento(int eventoId, int usuarioId)
+        {
+            var historial = new HistorialEvento
+            {
+                EventoId = eventoId,
+                UsuarioId = usuarioId,
+                CreoEvento = true,
+                ModificoEvento = false
+            };
+
+            context.HistorialEventos.Add(historial);
+            await context.SaveChangesAsync();
+        }
+        public async Task RegistrarModificacionEvento(int eventoId, int usuarioId)
+        {
+            var historial = new HistorialEvento
+            {
+                EventoId = eventoId,
+                UsuarioId = usuarioId,
+                CreoEvento = false,
+                ModificoEvento = true
+            };
+
+            context.HistorialEventos.Add(historial);
+            await context.SaveChangesAsync();
+        }
 
     }
 }
