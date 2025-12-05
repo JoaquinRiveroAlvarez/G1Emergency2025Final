@@ -379,3 +379,9 @@ tr.bg-primary td {
     vertical-align: middle;
     white-space: nowrap;
 }
+
+.estado-col {
+    width: 150px; /* o menos si querés más compacto */
+    padding: 0.25rem;
+    white-space: nowrap;
+}

@@ -95,6 +95,11 @@ else
                 }
             </ul>
         }
+        <div class="mt-3">
+            <button class="btn btn-warning" type="button" @onclick="AbrirModalMoviles">
+                + Asignar Móvil
+            </button>
+        </div>
 
 
         <div class="mt-4">
@@ -204,12 +209,22 @@ else
                             <ValidationMessage For="@(() => nuevoPaciente.ObraSocial)" />
                         </div>
                         <br />
+                        @if (eventoGuardado)
+                        {
+                            <div class="mt-3">
+                                <button class="btn btn-warning" type="button" @onclick="AbrirModalMoviles">
+                                    + Asignar Móvil
+                                </button>
+                            </div>
+                        }
+
 
                         <button class="btn btn-success" type="submit">Guardar</button>
                         <button class="btn btn-secondary" type="button" @onclick="CerrarModal">Cancelar</button>
 
 
                     </EditForm>
+
                 </div>
             </div>
         </div>
@@ -234,17 +249,63 @@ else
     <div class="alert alert-info mt-3">@Mensaje</div>
 }
 
+@if (mostrarModalMoviles)
+{
+    <div class="modal show d-block" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Asignar Móvil</h5>
+                    <button type="button" class="btn-close" @onclick="CerrarModalMoviles"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        @foreach (var m in moviles)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>@m.Patente - @m.TipoMovil (@m.disponibilidadMovil)</span>
+                                @if (m.disponibilidadMovil == DisponibilidadMovil.libre)
+                                {
+                                    <button class="btn btn-sm btn-success"
+                                            @onclick="() => AsignarMovil(m.Id, m.Patente)">
+                                        Asignar
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Ocupado</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CerrarModalMoviles">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+
+
 @code {
     EventoCrearDTO evento = new();
+    PacienteCrearDTO nuevoPaciente = new();
     List<CausaDTO> causas = new();
     List<TipoEstadoDTO> tipoestados = new();
+    List<MovilListadoDTO> moviles = new();
+    List<PacienteCrearDTO> pacientes = new();
     string Mensaje = "";
     bool cargando = true;
-
+    bool eventoGuardado = false;
+    string movilAsignado = "";
+    bool mostrarModalMoviles = false;
     bool mostrarModalPaciente = false;
 
-    PacienteCrearDTO nuevoPaciente = new();
-    List<PacienteCrearDTO> pacientes = new();
+   
+   
 
 
 
@@ -277,8 +338,39 @@ else
             return;
         }
 
-        Nav.NavigateTo("/eventos", forceLoad: true);
+        evento.Id = respEvento.Respuesta!; // ✅ capturamos el ID
+        eventoGuardado = true;
+        Mensaje = "Evento guardado correctamente. Ahora podés asignar un móvil.";
     }
+
+
+    
+
+    private async Task AbrirModalMoviles()
+    {
+        var resp = await Http.Get<List<MovilListadoDTO>>("api/movil");
+        if (!resp.Error) moviles = resp.Respuesta ?? new();
+        mostrarModalMoviles = true;
+    }
+
+    private void CerrarModalMoviles() => mostrarModalMoviles = false;
+
+    private async Task AsignarMovil(int movilId, string patente)
+    {
+        var resp = await Http.Put<object, object>($"api/movil/{movilId}/asignarEvento/{evento.Id}", new { });
+        if (!resp.Error)
+        {
+            movilAsignado = patente;
+            Mensaje = $"Móvil asignado correctamente: {patente}";
+            mostrarModalMoviles = false;
+        }
+        else
+        {
+            Mensaje = $"Error al asignar móvil: {resp.ObtenerError()}";
+        }
+    }
+
+
 
     private void Cancelar()
     {
