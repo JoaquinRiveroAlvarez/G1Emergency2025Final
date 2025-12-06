@@ -1,0 +1,47 @@
+﻿@page "/evento/codigo/{codigo}"
+@inject IHttpServicio Http
+
+<h3 class="text-light">Evento @evento?.Codigo</h3>
+
+@if (cargando)
+{
+    <div class="alert alert-info">Cargando evento...</div>
+}
+else if (evento == null)
+{
+    <div class="alert alert-warning">No se encontró el evento.</div>
+}
+else
+{
+    <div class="card bg-white text-dark mb-3" style="max-width: 500px;">
+        <div class="card-body py-2 px-3">
+            <p class="mb-2"><strong>Ubicación:</strong> @evento.Ubicacion</p>
+            <p class="mb-2"><strong>Teléfono:</strong> @evento.Telefono</p>
+            <p class="mb-2"><strong>Fecha:</strong> @evento.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
+            <p class="mb-2"><strong>Causa:</strong> @evento.Causa</p>
+            <p class="mb-2"><strong>Estado:</strong> @evento.TipoEstado</p>
+        </div>
+    </div>
+
+
+    
+    <NavLink class="btn btn-secondary mt-3" href="/eventos">
+        <i class="bi bi-arrow-left"></i> Volver a eventos
+    </NavLink>
+}
+
+@code {
+    [Parameter] public string codigo { get; set; } = string.Empty;
+    private EventoDiagPresuntivoListadoDTO? evento;
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resp = await Http.Get<EventoDiagPresuntivoListadoDTO>($"api/evento/EventoPorCodigo/{codigo}");
+        if (!resp.Error)
+        {
+            evento = resp.Respuesta;
+        }
+        cargando = false;
+    }
+}
