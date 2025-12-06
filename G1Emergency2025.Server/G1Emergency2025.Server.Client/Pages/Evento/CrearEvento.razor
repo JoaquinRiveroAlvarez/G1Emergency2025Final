@@ -262,18 +262,7 @@ else
     </div>
     <div class="modal-backdrop fade show"></div>
 }
-@if (pacientes.Any())
-{
-    <h5 class="text-light mt-3">Pacientes agregados</h5>
-    <ul class="list-group">
-        @foreach (var p in pacientes)
-        {
-            <li class="list-group-item">
-                @p.Persona.Nombre - @p.Persona.DNI
-            </li>
-        }
-    </ul>
-}
+
 
 @if (!string.IsNullOrEmpty(Mensaje))
 {
@@ -405,9 +394,13 @@ else
 
     private void AbrirModalPaciente()
     {
-        nuevoPaciente = new();
+        nuevoPaciente = new()
+        {
+            Persona = new PersonaCrearDTO()
+        };
         mostrarModalPaciente = true;
     }
+
 
     private void CerrarModal()
     {
