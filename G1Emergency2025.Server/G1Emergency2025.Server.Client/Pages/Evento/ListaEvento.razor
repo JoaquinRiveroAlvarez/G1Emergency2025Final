@@ -110,13 +110,17 @@ else
 
 
                         <td class="text-center" style="white-space:nowrap;">
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-light" title="Ver evento" @onclick="() => VerEventoPorCodigo(evento.Codigo)">📄</button>
-                                <button class="btn btn-sm btn-outline-light me-1" title="Editar" @onclick="() => Editar(evento.Id)">✏</button>
-                                <button class="btn btn-sm btn-outline-light me-1" title="Borrar" @onclick="() => SolicitarConfirmacion(evento)">🗑</button>
-                               
-                            </div>
+                            <button class="btn btn-sm btn-outline-light me-1"
+                                    title="Editar"
+                                    @onclick="() => Editar(evento.Id)">
+                                ✏
+                            </button>
 
+                            <button class="btn btn-sm btn-outline-light"
+                                    title="Borrar"
+                                    @onclick="() => SolicitarConfirmacion(evento)">
+                                🗑
+                            </button>
 
 
                         </td>
@@ -316,12 +320,4 @@ else
     {
         Nav.NavigateTo("/geolocalizacion");
     }
-
-    
-
-    private void VerEventoPorCodigo(string codigo)
-    {
-        Nav.NavigateTo($"/evento/codigo/{codigo}");
-    }
-
 }
