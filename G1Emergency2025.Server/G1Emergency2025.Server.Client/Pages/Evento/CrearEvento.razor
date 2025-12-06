@@ -40,31 +40,31 @@ else
     </div>
 
         <div class="row mb-3 align-items-center">
+            <!-- Color del Evento -->
             <div class="col-md-4">
+                <!-- TU BLOQUE DE COLOR QUEDA IGUAL -->
                 <label class="form-label text-light">Color del Evento</label>
                 <InputRadioGroup @bind-Value="evento.colorEvento">
                     <div class="d-flex gap-3">
                         <div>
                             <InputRadio class="d-none" id="colorVerde" Value="ColorEvento.Verde" />
                             <label for="colorVerde">
-                                <span class="rounded-circle d-inline-block"
-                                      style="width: 24px; height: 24px; background-color: green; border: 2px solid white; cursor: pointer;"></span>
+                                <span class="@GetCircleClass(ColorEvento.Verde)"
+                                      style="width: 24px; height: 24px; background-color: green; cursor: pointer;"></span>
                             </label>
                         </div>
-
                         <div>
                             <InputRadio class="d-none" id="colorRojo" Value="ColorEvento.Rojo" />
                             <label for="colorRojo">
-                                <span class="rounded-circle d-inline-block"
-                                      style="width: 24px; height: 24px; background-color: red; border: 2px solid white; cursor: pointer;"></span>
+                                <span class="@GetCircleClass(ColorEvento.Rojo)"
+                                      style="width: 24px; height: 24px; background-color: red; cursor: pointer;"></span>
                             </label>
                         </div>
-
                         <div>
                             <InputRadio class="d-none" id="colorAmarillo" Value="ColorEvento.Amarillo" />
                             <label for="colorAmarillo">
-                                <span class="rounded-circle d-inline-block"
-                                      style="width: 24px; height: 24px; background-color: yellow; border: 2px solid white; cursor: pointer;"></span>
+                                <span class="@GetCircleClass(ColorEvento.Amarillo)"
+                                      style="width: 24px; height: 24px; background-color: yellow; cursor: pointer;"></span>
                             </label>
                         </div>
                     </div>
@@ -72,6 +72,7 @@ else
                 <ValidationMessage For="@(() => evento.colorEvento)" />
             </div>
 
+            <!-- Causa -->
             <div class="col-md-4">
                 <label class="form-label text-light">Causa</label>
                 <InputSelect class="form-control" @bind-Value="evento.CausaId">
@@ -84,6 +85,7 @@ else
                 <ValidationMessage For="@(() => evento.CausaId)" />
             </div>
 
+            <!-- Estado -->
             <div class="col-md-4">
                 <label class="form-label text-light">Estado</label>
                 <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
@@ -95,9 +97,9 @@ else
                 </InputSelect>
                 <ValidationMessage For="@(() => evento.TipoEstadoId)" />
             </div>
-
-
         </div>
+
+
 
 
 
@@ -368,6 +370,16 @@ else
         var resp = await Http.Get<List<MovilListadoDTO>>("api/movil");
         if (!resp.Error) moviles = resp.Respuesta ?? new();
         mostrarModalMoviles = true;
+    }
+
+    private string GetCircleClass(ColorEvento color)
+    {
+        // Si coincide con el seleccionado → borde negro y más grueso
+        if (evento.colorEvento == color)
+            return "rounded-circle d-inline-block border border-3 border-dark shadow";
+
+        // Si no está seleccionado → borde blanco normal
+        return "rounded-circle d-inline-block border border-2 border-white";
     }
 
     private void CerrarModalMoviles() => mostrarModalMoviles = false;
