@@ -5,6 +5,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
 {
     public interface IEventoRepositorio : IRepositorio<Evento>
     {
+        Task<EventoDiagPresuntivoListadoDTO?> SelectPorId(int eventoId);
         Task<List<EventoListadoDTO>> SelectListaEventoReciente();
         Task<List<EventoListadoDTO>> SelectListaEvento();
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId);

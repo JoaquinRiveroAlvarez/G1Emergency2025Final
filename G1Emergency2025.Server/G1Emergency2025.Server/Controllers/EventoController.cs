@@ -18,6 +18,17 @@ namespace Proyecto2025.Server.Controllers
             this.repositorio = repositorio;
         }
 
+        [HttpGet("id/{id}")]
+        public async Task<ActionResult<EventoDTO>> GetEventoPorId(int id)
+        {
+            var evento = await repositorio.SelectById(id);
+
+            if (evento == null)
+                return NotFound(new { mensaje = "Evento no encontrado" });
+
+            return Ok(evento);
+        }
+
         [HttpGet("ListaEvento")]
         public async Task<IActionResult> GetListaEvento()
         {
