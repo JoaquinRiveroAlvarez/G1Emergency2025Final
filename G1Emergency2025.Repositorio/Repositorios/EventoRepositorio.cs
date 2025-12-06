@@ -51,6 +51,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .ThenInclude(em => em.Movil)
             .Include(e => e.TipoEstados)
             .Include(e => e.Causa)
+            .Include(e => e.HistorialEventos)
+                .ThenInclude(u => u.Usuario)
             .Where(e => e.TipoEstadoId == estadoEventoId)
 
             .Select(e => new EventoDiagPresuntivoListadoDTO
@@ -101,8 +103,18 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     Patente = em.Movil.Patente,
                     TipoMovil = em.Movil.TipoMovils!.Tipo,
                     disponibilidadMovil = em.Movil.disponibilidadMovil
-                }).ToList()
+                }).ToList(),
 
+                Historial = e.HistorialEventos
+                .GroupBy(h => h.UsuarioId)
+                .Select(g => new HistorialEventoDTO
+                {
+                    UsuarioId = g.Key,
+                    UsuarioNombre = g.First().Usuario!.Nombre,
+                    CreoEvento = g.Any(x => x.CreoEvento),
+                    ModificoEvento = g.Any(x => x.ModificoEvento),
+                    CantidadModificaciones = g.Count(x => x.ModificoEvento)
+                }).ToList()
             })
             .OrderBy(e => e.FechaHora)
             .ToListAsync();
@@ -123,6 +135,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .ThenInclude(em => em.Movil)
             .Include(e => e.TipoEstados)
             .Include(e => e.Causa)
+            .Include(e => e.HistorialEventos)
+                .ThenInclude(u => u.Usuario)
                  .Where(e => e.PacienteEventos
                      .Any(pe => pe.Pacientes != null &&
                                 pe.Pacientes.Persona != null &&
@@ -178,8 +192,18 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     Patente = em.Movil.Patente,
                     TipoMovil = em.Movil.TipoMovils!.Tipo,
                     disponibilidadMovil = em.Movil.disponibilidadMovil
-                }).ToList()
+                }).ToList(),
 
+                Historial = e.HistorialEventos
+                .GroupBy(h => h.UsuarioId)
+                .Select(g => new HistorialEventoDTO
+                {
+                    UsuarioId = g.Key,
+                    UsuarioNombre = g.First().Usuario!.Nombre,
+                    CreoEvento = g.Any(x => x.CreoEvento),
+                    ModificoEvento = g.Any(x => x.ModificoEvento),
+                    CantidadModificaciones = g.Count(x => x.ModificoEvento)
+                }).ToList()
             })
             .OrderBy(e => e.FechaHora)
             .ToListAsync();
@@ -200,6 +224,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .ThenInclude(em => em.Movil)
             .Include(e => e.TipoEstados)
             .Include(e => e.Causa)
+            .Include(e => e.HistorialEventos)
+                   .ThenInclude(u => u.Usuario)
             .Where(e => e.PacienteEventos
             .Any(pe => pe.Pacientes!.HistoriaClinica == historiaClinica))
 
@@ -252,8 +278,17 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     Patente = em.Movil.Patente,
                     TipoMovil = em.Movil.TipoMovils!.Tipo,
                     disponibilidadMovil = em.Movil.disponibilidadMovil
+                }).ToList(),
+                Historial = e.HistorialEventos
+                .GroupBy(h => h.UsuarioId)
+                .Select(g => new HistorialEventoDTO
+                {
+                    UsuarioId = g.Key,
+                    UsuarioNombre = g.First().Usuario!.Nombre,
+                    CreoEvento = g.Any(x => x.CreoEvento),
+                    ModificoEvento = g.Any(x => x.ModificoEvento),
+                    CantidadModificaciones = g.Count(x => x.ModificoEvento)
                 }).ToList()
-
             })
             .OrderBy(e => e.FechaHora)
             .ToListAsync();
@@ -344,6 +379,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     .ThenInclude(elh => elh.LugarHecho)
                 .Include(e => e.EventoMovils)
                     .ThenInclude(em => em.Movil)
+                .Include(e => e.HistorialEventos)
+                   .ThenInclude(u => u.Usuario)
                 .AsQueryable();
 
             if (anio.HasValue)
@@ -406,8 +443,18 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     Patente = em.Movil.Patente,
                     TipoMovil = em.Movil.TipoMovils!.Tipo,
                     disponibilidadMovil = em.Movil.disponibilidadMovil
-                }).ToList()
+                }).ToList(),
 
+                Historial = e.HistorialEventos
+                .GroupBy(h => h.UsuarioId)
+                .Select(g => new HistorialEventoDTO
+                {
+                    UsuarioId = g.Key,
+                    UsuarioNombre = g.First().Usuario!.Nombre,
+                    CreoEvento = g.Any(x => x.CreoEvento),
+                    ModificoEvento = g.Any(x => x.ModificoEvento),
+                    CantidadModificaciones = g.Count(x => x.ModificoEvento)
+                }).ToList()
             }).ToList();
         }
         public async Task<EventoPacienteDiagPresuntivoResumenDTO?> SelectEventoConPacientePorId(int id)
@@ -452,6 +499,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     .ThenInclude(em => em.Movil)
                 .Include(e => e.TipoEstados)
                 .Include(e => e.Causa)
+                .Include(e => e.HistorialEventos)
+                   .ThenInclude(u => u.Usuario)
                 .Where(e => e.Codigo == cod)
 
                 .Select(e => new EventoDiagPresuntivoListadoDTO
@@ -502,6 +551,17 @@ namespace G1Emergency2025.Repositorio.Repositorios
                         Patente = em.Movil.Patente,
                         TipoMovil = em.Movil.TipoMovils!.Tipo,
                         disponibilidadMovil = em.Movil.disponibilidadMovil
+                    }).ToList(),
+
+                    Historial = e.HistorialEventos
+                    .GroupBy(h => h.UsuarioId)
+                    .Select(g => new HistorialEventoDTO
+                    {
+                        UsuarioId = g.Key,
+                        UsuarioNombre = g.First().Usuario!.Nombre,
+                        CreoEvento = g.Any(x => x.CreoEvento),
+                        ModificoEvento = g.Any(x => x.ModificoEvento),
+                        CantidadModificaciones = g.Count(x => x.ModificoEvento)
                     }).ToList()
                 })
                 .FirstOrDefaultAsync();
