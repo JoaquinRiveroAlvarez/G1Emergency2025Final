@@ -47,6 +47,10 @@
         </div>
     </div>
 }
+<div class="mt-3">
+    <button class="btn btn-secondary" @onclick="VolverAEvento">← Volver a Evento</button>
+</div>
+
 
 @code {
     private List<MovilListadoDTO> moviles = new()
@@ -84,5 +88,10 @@
         public double Top { get; set; }
         public double Left { get; set; }
     }
+    private void VolverAEvento()
+    {
+        Nav.NavigateTo("/eventos");
+    }
+
 }
 

@@ -17,8 +17,16 @@ namespace G1Emergency2025.Shared.DTO
         public string Telefono { get; set; } = string.Empty;
         public DateTime FechaHora { get; set; } = DateTime.Now;
         public string Causa { get; set; } = string.Empty;
+        public int CausaId { get; set; } //EMILSE 
+
         public string TipoEstado { get; set; } = string.Empty;
         public int TipoEstadoId { get; set; }
+        public string DiagnosticoPresuntivo { get; set; } = string.Empty;//EMILSE
+
+        public string ObraSocial { get; set; } = string.Empty; //EMILSE 
+
+
+
         public List<PacienteDiagPresuntivoDTO> Pacientes { get; set; } = new();
         public List<UsuarioResumenDTO> Usuarios { get; set; } = new();
         public List<LugarHechoResumenDTO> Lugares { get; set; } = new();

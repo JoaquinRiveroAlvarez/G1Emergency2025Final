@@ -20,8 +20,13 @@ else
             <p class="mb-2"><strong>Fecha:</strong> @evento.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
             <p class="mb-2"><strong>Causa:</strong> @evento.Causa</p>
             <p class="mb-2"><strong>Estado:</strong> @evento.TipoEstado</p>
+            @if (!string.IsNullOrWhiteSpace(evento.DiagnosticoPresuntivo))
+            {
+                <p class="mb-2"><strong>Diagnóstico Presuntivo:</strong> @evento.DiagnosticoPresuntivo</p>
+            }
         </div>
     </div>
+
 
 
     
