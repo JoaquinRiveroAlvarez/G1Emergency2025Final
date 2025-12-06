@@ -162,10 +162,10 @@ else
 }
 
 @code {
-    List<EventoListadoDTO>? eventos;
+    List<EventoDiagPresuntivoListadoDTO>? eventos;
     string Mensaje = "";
     bool mostrarTodos = false;
-    EventoListadoDTO? eventoAEliminar;
+    EventoDiagPresuntivoListadoDTO? eventoAEliminar;
     bool mostrarModalConfirmacion = false;
 
     // 🔹 Estados disponibles desde el backend
@@ -199,11 +199,11 @@ else
                ? "api/evento/ListaEvento"
                : "api/evento/ListaEventoReciente";
 
-            var resp = await Http.Get<List<EventoListadoDTO>>(endpoint);
+            var resp = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>(endpoint);
 
             if (!resp.Error)
             {
-                eventos = resp.Respuesta ?? new List<EventoListadoDTO>();
+                eventos = resp.Respuesta ?? new List<EventoDiagPresuntivoListadoDTO>();
 
                 // 🔹 Filtrar: excluir los eventos finalizados
                 eventos = eventos
@@ -263,7 +263,7 @@ else
         await LeerEventos();
     }
 
-    private async Task Borrar(EventoListadoDTO evento)
+    private async Task Borrar(EventoDiagPresuntivoListadoDTO evento)
     {
         var resp = await Http.Delete($"api/evento/{evento.Id}");
 
@@ -275,7 +275,7 @@ else
         await LeerEventos();
     }
 
-    private void SolicitarConfirmacion(EventoListadoDTO evento)
+    private void SolicitarConfirmacion(EventoDiagPresuntivoListadoDTO evento)
     {
         eventoAEliminar = evento;
         mostrarModalConfirmacion = true;
