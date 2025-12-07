@@ -11,99 +11,118 @@
 else
 {
     <EditForm Model="@evento" OnValidSubmit="GuardarEvento">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-        <!-- Teléfono / Ubicación / Fecha -->
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label class="form-label text-light">Teléfono</label>
-                <InputText class="form-control" @bind-Value="evento.Telefono" />
-            </div>
-
-            <div class="col-md-5">
-                <label class="form-label text-light">Ubicación</label>
-                <InputText class="form-control" @bind-Value="evento.Ubicacion" />
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label text-light">Fecha y Hora</label>
-                <InputDate class="form-control" @bind-Value="evento.FechaHora" />
-            </div>
+    <!-- Teléfono / Ubicación / Fecha -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label class="form-label text-light">Teléfono</label>
+            <InputText class="form-control" @bind-Value="evento.Telefono" />
         </div>
 
-        <!-- Relato -->
-        <div class="mb-3">
-            <label class="form-label text-light">Relato</label>
-            <InputTextArea class="form-control" @bind-Value="evento.Relato" />
+        <div class="col-md-5">
+            <label class="form-label text-light">Ubicación</label>
+            <InputText class="form-control" @bind-Value="evento.Ubicacion" />
         </div>
 
-        <!-- Color / Causa / Estado / Diagnóstico -->
-        <div class="row mb-3 align-items-center">
-            <div class="col-md-4">
-                <label class="form-label text-light">Color del Evento</label>
-                <InputRadioGroup @bind-Value="evento.colorEvento">
-                    <div class="d-flex gap-3">
-                        <label><InputRadio Value="ColorEvento.Verde" /> Verde</label>
-                        <label><InputRadio Value="ColorEvento.Rojo" /> Rojo</label>
-                        <label><InputRadio Value="ColorEvento.Amarillo" /> Amarillo</label>
+        <div class="col-md-3">
+            <label class="form-label text-light">Fecha y Hora</label>
+            <InputDate class="form-control" @bind-Value="evento.FechaHora" />
+        </div>
+    </div>
+
+    <!-- Relato -->
+    <div class="mb-3">
+        <label class="form-label text-light">Relato</label>
+        <InputTextArea class="form-control" @bind-Value="evento.Relato" />
+    </div>
+
+    <!-- Color / Causa / Estado / Diagnóstico -->
+    <div class="row mb-3 align-items-center">
+        <div class="col-md-4">
+            <label class="form-label text-light">Color del Evento</label>
+            <InputRadioGroup @bind-Value="evento.colorEvento">
+                <div class="d-flex gap-3">
+                    <div>
+                        <InputRadio class="d-none" id="colorVerde" Value="ColorEvento.Verde" />
+                        <label for="colorVerde">
+                            <span class="@GetCircleClass(ColorEvento.Verde)"
+                                  style="width: 24px; height: 24px; background-color: green; cursor: pointer;"></span>
+                        </label>
                     </div>
-                </InputRadioGroup>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label text-light">Causa</label>
-                <InputSelect class="form-control" @bind-Value="evento.CausaId">
-                    <option value="0">-- Seleccionar causa --</option>
-                    @foreach (var c in causas)
-                    {
-                        <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
-                    }
-                </InputSelect>
-            </div>
-
-            <div class="col-md-4">
-                <label class="form-label text-light">Estado</label>
-                <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
-                    <option value="0">-- Seleccionar estado --</option>
-                    @foreach (var e in tipoestados)
-                    {
-                        <option value="@e.Id">@($"{e.Codigo} - {e.Tipo}")</option>
-                    }
-                </InputSelect>
-            </div>
+                    <div>
+                        <InputRadio class="d-none" id="colorRojo" Value="ColorEvento.Rojo" />
+                        <label for="colorRojo">
+                            <span class="@GetCircleClass(ColorEvento.Rojo)"
+                                  style="width: 24px; height: 24px; background-color: red; cursor: pointer;"></span>
+                        </label>
+                    </div>
+                    <div>
+                        <InputRadio class="d-none" id="colorAmarillo" Value="ColorEvento.Amarillo" />
+                        <label for="colorAmarillo">
+                            <span class="@GetCircleClass(ColorEvento.Amarillo)"
+                                  style="width: 24px; height: 24px; background-color: yellow; cursor: pointer;"></span>
+                        </label>
+                    </div>
+                </div>
+            </InputRadioGroup>
+            <ValidationMessage For="@(() => evento.colorEvento)" />
         </div>
 
-        <div class="mb-3">
-            <label class="form-label text-light">Diagnóstico Presuntivo</label>
-            <InputText class="form-control" @bind-Value="evento.DiagnosticoPresuntivo" />
-        </div>
-
-        <!-- Pacientes -->
-        <div class="mt-3">
-            <button class="btn btn-primary" type="button" @onclick="AbrirModalPaciente">+ Agregar Paciente</button>
-        </div>
-
-        @if (evento.Pacientes.Any())
-        {
-            <h5 class="text-light mt-3">Pacientes agregados</h5>
-            <ul class="list-group">
-                @foreach (var p in evento.Pacientes)
+        <div class="col-md-4">
+            <label class="form-label text-light">Causa</label>
+            <InputSelect class="form-control" @bind-Value="evento.CausaId">
+                <option value="0">-- Seleccionar causa --</option>
+                @foreach (var c in causas)
                 {
-                    <li class="list-group-item">@p.NombrePersona - @p.DNIPersona</li>
+                    <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
                 }
-            </ul>
-        }
-
-        <div class="mt-3">
-            <button class="btn btn-warning" type="button" @onclick="AbrirModalMoviles">+ Asignar Móvil</button>
+            </InputSelect>
         </div>
 
-        <div class="mt-4">
-            <button class="btn btn-success me-2" type="submit">Guardar</button>
-            <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
+        <div class="col-md-4">
+            <label class="form-label text-light">Estado</label>
+            <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
+                <option value="0">-- Seleccionar estado --</option>
+                @foreach (var e in tipoestados)
+                {
+                    <option value="@e.Id">@($"{e.Codigo} - {e.Tipo}")</option>
+                }
+            </InputSelect>
         </div>
-    </EditForm>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label text-light">Diagnóstico Presuntivo</label>
+        <InputText class="form-control" @bind-Value="evento.DiagnosticoPresuntivo" />
+    </div>
+
+    <!-- Pacientes -->
+    <div class="mt-3">
+        <button class="btn btn-primary" type="button" @onclick="AbrirModalPaciente">+ Agregar Paciente</button>
+    </div>
+
+    @if (evento.Pacientes.Any())
+    {
+        <h5 class="text-light mt-3">Pacientes agregados</h5>
+        <ul class="list-group">
+            @foreach (var p in evento.Pacientes)
+            {
+                <li class="list-group-item">@p.NombrePersona - @p.DNIPersona</li>
+            }
+        </ul>
+    }
+
+    <div class="mt-3">
+        <button class="btn btn-warning" type="button" @onclick="AbrirModalMoviles">+ Asignar Móvil</button>
+    </div>
+
+    <div class="mt-4">
+        <button class="btn btn-success me-2" type="submit">Guardar</button>
+        <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
+    </div>
+   </EditForm>
 }
 
 <!-- Modal Paciente -->

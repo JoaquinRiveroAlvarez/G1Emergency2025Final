@@ -13,23 +13,86 @@ else if (evento == null)
 }
 else
 {
-    <div class="card bg-white text-dark mb-3" style="max-width: 500px;">
+    <div class="card bg-white text-dark mb-3" style="max-width: 600px;">
         <div class="card-body py-2 px-3">
-            <p class="mb-2"><strong>Ubicación:</strong> @evento.Ubicacion</p>
-            <p class="mb-2"><strong>Teléfono:</strong> @evento.Telefono</p>
-            <p class="mb-2"><strong>Fecha:</strong> @evento.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
-            <p class="mb-2"><strong>Causa:</strong> @evento.Causa</p>
-            <p class="mb-2"><strong>Estado:</strong> @evento.TipoEstado</p>
+           
+
+            <p><strong>Ubicación:</strong> @evento.Ubicacion</p>
+            <p><strong>Teléfono:</strong> @evento.Telefono</p>
+            <p><strong>Fecha:</strong> @evento.FechaHora.ToString("dd/MM/yyyy HH:mm")</p>
+            <p><strong>Causa:</strong> @evento.Causa</p>
+            <p><strong>Estado:</strong> @evento.TipoEstado</p>
             @if (!string.IsNullOrWhiteSpace(evento.DiagnosticoPresuntivo))
             {
-                <p class="mb-2"><strong>Diagnóstico Presuntivo:</strong> @evento.DiagnosticoPresuntivo</p>
+                <p><strong>Diagnóstico Presuntivo:</strong> @evento.DiagnosticoPresuntivo</p>
+            }
+            @if (!string.IsNullOrWhiteSpace(evento.Relato))
+            {
+                <p><strong>Relato:</strong> @evento.Relato</p>
+            }
+
+            <!-- Color del evento como círculo -->
+            <p>
+                <strong>Color:</strong>
+                <span class="@GetCircleClass(evento.colorEvento)"
+                      style="width: 24px; height: 24px; display:inline-block; background-color:@GetColorHex(evento.colorEvento);">
+                </span>
+            </p>
+
+            <!-- Móviles asignados -->
+            @if (evento.Moviles.Any())
+            {
+                <p><strong>Móviles asignados:</strong></p>
+                <ul class="list-group mb-2">
+                    @foreach (var m in evento.Moviles)
+                    {
+                        <li class="list-group-item">@m.Patente - @m.TipoMovil</li>
+                    }
+                </ul>
+            }
+
+            <!-- Usuarios -->
+            @if (evento.Usuarios.Any())
+            {
+                <p><strong>Usuarios involucrados:</strong></p>
+                <ul class="list-group mb-2">
+                    @foreach (var u in evento.Usuarios)
+                    {
+                        <li class="list-group-item">@u.Nombre </li>
+                    }
+                </ul>
+            }
+
+            <!-- Lugares -->
+            @if (evento.Lugares.Any())
+            {
+                <p><strong>Lugares relacionados:</strong></p>
+                <ul class="list-group mb-2">
+                    @foreach (var l in evento.Lugares)
+                    {
+                        <li class="list-group-item">@l.Descripcion</li>
+                    }
+                </ul>
+            }
+
+            <!-- Historial -->
+            @if (evento.Historial.Any())
+            {
+                <p><strong>Historial de modificaciones:</strong></p>
+                <ul class="list-group mb-2">
+                    @foreach (var h in evento.Historial)
+                    {
+                        <li class="list-group-item">
+                            @h.UsuarioNombre:
+                            @(h.CreoEvento ? "Creó el evento" : "") @(h.ModificoEvento ? $" - Modificó ({h.CantidadModificaciones} veces)" : "")
+                        </li>
+                    }
+                </ul>
             }
         </div>
     </div>
 
 
-
-    
     <NavLink class="btn btn-secondary mt-3" href="/eventos">
         <i class="bi bi-arrow-left"></i> Volver a eventos
     </NavLink>
@@ -49,4 +112,21 @@ else
         }
         cargando = false;
     }
+
+    private string GetCircleClass(ColorEvento color)
+    {
+        return "rounded-circle border border-2 border-dark shadow";
+    }
+
+    private string GetColorHex(ColorEvento color)
+    {
+        return color switch
+        {
+            ColorEvento.Verde => "green",
+            ColorEvento.Rojo => "red",
+            ColorEvento.Amarillo => "yellow",
+            _ => "gray"
+        };
+    }
+
 }

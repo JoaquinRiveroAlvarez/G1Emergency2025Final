@@ -23,7 +23,7 @@ namespace G1Emergency2025.Shared.DTO
         public int TipoEstadoId { get; set; }
         public string DiagnosticoPresuntivo { get; set; } = string.Empty;//EMILSE
 
-        public string ObraSocial { get; set; } = string.Empty; //EMILSE 
+        
 
 
 
