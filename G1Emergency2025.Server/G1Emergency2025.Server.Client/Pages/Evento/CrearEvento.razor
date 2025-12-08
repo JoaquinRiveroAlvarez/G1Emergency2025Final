@@ -11,121 +11,117 @@
 else
 {
     <EditForm Model="@evento" OnValidSubmit="GuardarEvento">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+        <DataAnnotationsValidator />
+        <ValidationSummary />
 
-    <!-- Teléfono / Ubicación / Fecha -->
-    <div class="row mb-3">
-        <div class="col-md-4">
-            <label class="form-label text-light">Teléfono</label>
-            <InputText class="form-control" @bind-Value="evento.Telefono" />
+       
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label class="form-label text-light">Teléfono</label>
+                <InputText class="form-control" @bind-Value="evento.Telefono" />
+            </div>
+
+            <div class="col-md-5">
+                <label class="form-label text-light">Ubicación</label>
+                <InputText class="form-control" @bind-Value="evento.Ubicacion" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label text-light">Fecha y Hora</label>
+                <InputDate class="form-control" @bind-Value="evento.FechaHora" />
+            </div>
         </div>
 
-        <div class="col-md-5">
-            <label class="form-label text-light">Ubicación</label>
-            <InputText class="form-control" @bind-Value="evento.Ubicacion" />
+       
+        <div class="mb-3">
+            <label class="form-label text-light">Relato</label>
+            <InputTextArea class="form-control" @bind-Value="evento.Relato" />
         </div>
 
-        <div class="col-md-3">
-            <label class="form-label text-light">Fecha y Hora</label>
-            <InputDate class="form-control" @bind-Value="evento.FechaHora" />
-        </div>
-    </div>
+        
+        <div class="row mb-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label text-light">Color del Evento</label>
+                <InputRadioGroup @bind-Value="evento.colorEvento">
+                    <div class="d-flex gap-3">
+                        <div>
+                            <InputRadio class="d-none" id="colorVerde" Value="ColorEvento.Verde" />
+                            <label for="colorVerde">
+                                <span class="@GetCircleClass(ColorEvento.Verde)"
+                                      style="width: 24px; height: 24px; background-color: green; cursor: pointer;"></span>
 
-    <!-- Relato -->
-    <div class="mb-3">
-        <label class="form-label text-light">Relato</label>
-        <InputTextArea class="form-control" @bind-Value="evento.Relato" />
-    </div>
-
-    <!-- Color / Causa / Estado / Diagnóstico -->
-    <div class="row mb-3 align-items-center">
-        <div class="col-md-4">
-            <label class="form-label text-light">Color del Evento</label>
-            <InputRadioGroup @bind-Value="evento.colorEvento">
-                <div class="d-flex gap-3">
-                    <div>
-                        <InputRadio class="d-none" id="colorVerde" Value="ColorEvento.Verde" />
-                        <label for="colorVerde">
-                            <span class="@GetCircleClass(ColorEvento.Verde)"
-                                  style="width: 24px; height: 24px; background-color: green; cursor: pointer;"></span>
-                        </label>
+                            </label>
+                        </div>
+                        <div>
+                            <InputRadio class="d-none" id="colorRojo" Value="ColorEvento.Rojo" />
+                            <label for="colorRojo">
+                                <span class="@GetCircleClass(ColorEvento.Rojo)"
+                                      style="width: 24px; height: 24px; background-color: red; cursor: pointer;"></span>
+                            </label>
+                        </div>
+                        <div>
+                            <InputRadio class="d-none" id="colorAmarillo" Value="ColorEvento.Amarillo" />
+                            <label for="colorAmarillo">
+                                <span class="@GetCircleClass(ColorEvento.Amarillo)"
+                                      style="width: 24px; height: 24px; background-color: yellow; cursor: pointer;"></span>
+                            </label>
+                        </div>
                     </div>
-                    <div>
-                        <InputRadio class="d-none" id="colorRojo" Value="ColorEvento.Rojo" />
-                        <label for="colorRojo">
-                            <span class="@GetCircleClass(ColorEvento.Rojo)"
-                                  style="width: 24px; height: 24px; background-color: red; cursor: pointer;"></span>
-                        </label>
-                    </div>
-                    <div>
-                        <InputRadio class="d-none" id="colorAmarillo" Value="ColorEvento.Amarillo" />
-                        <label for="colorAmarillo">
-                            <span class="@GetCircleClass(ColorEvento.Amarillo)"
-                                  style="width: 24px; height: 24px; background-color: yellow; cursor: pointer;"></span>
-                        </label>
-                    </div>
-                </div>
-            </InputRadioGroup>
-            <ValidationMessage For="@(() => evento.colorEvento)" />
+                </InputRadioGroup>
+                <ValidationMessage For="@(() => evento.colorEvento)" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-light">Causa</label>
+                <InputSelect class="form-control" @bind-Value="evento.CausaId">
+                    <option value="0">-- Seleccionar causa --</option>
+                    @foreach (var c in causas)
+                    {
+                        <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-light">Estado</label>
+                <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
+                    <option value="0">-- Seleccionar estado --</option>
+                    @foreach (var e in tipoestados)
+                    {
+                        <option value="@e.Id">@($"{e.Codigo} - {e.Tipo}")</option>
+                    }
+                </InputSelect>
+            </div>
         </div>
 
-        <div class="col-md-4">
-            <label class="form-label text-light">Causa</label>
-            <InputSelect class="form-control" @bind-Value="evento.CausaId">
-                <option value="0">-- Seleccionar causa --</option>
-                @foreach (var c in causas)
+       
+        <div class="mt-3">
+            <button class="btn btn-primary" type="button" @onclick="AbrirModalPaciente">+ Agregar Paciente</button>
+        </div>
+
+        @if (evento.Pacientes.Any())
+        {
+            <h5 class="text-light mt-3">Pacientes agregados</h5>
+            <ul class="list-group">
+                @foreach (var p in evento.Pacientes)
                 {
-                    <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
+                    <li class="list-group-item">@p.Persona.Nombre - DNI: @p.Persona.DNI</li>
                 }
-            </InputSelect>
+            </ul>
+        }
+
+        <div class="mt-4">
+            <button class="btn btn-success me-2" type="submit">Guardar</button>
+            <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
         </div>
+    </EditForm>
 
-        <div class="col-md-4">
-            <label class="form-label text-light">Estado</label>
-            <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
-                <option value="0">-- Seleccionar estado --</option>
-                @foreach (var e in tipoestados)
-                {
-                    <option value="@e.Id">@($"{e.Codigo} - {e.Tipo}")</option>
-                }
-            </InputSelect>
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label text-light">Diagnóstico Presuntivo</label>
-        <InputText class="form-control" @bind-Value="evento.DiagnosticoPresuntivo" />
-    </div>
-
-    <!-- Pacientes -->
-    <div class="mt-3">
-        <button class="btn btn-primary" type="button" @onclick="AbrirModalPaciente">+ Agregar Paciente</button>
-    </div>
-
-    @if (evento.Pacientes.Any())
-    {
-        <h5 class="text-light mt-3">Pacientes agregados</h5>
-        <ul class="list-group">
-            @foreach (var p in evento.Pacientes)
-            {
-                <li class="list-group-item">@p.NombrePersona - @p.DNIPersona</li>
-            }
-        </ul>
-    }
-
-    <div class="mt-3">
-        <button class="btn btn-warning" type="button" @onclick="AbrirModalMoviles">+ Asignar Móvil</button>
-    </div>
-
-    <div class="mt-4">
-        <button class="btn btn-success me-2" type="submit">Guardar</button>
-        <button class="btn btn-secondary" type="button" @onclick="Cancelar">Cancelar</button>
-    </div>
-   </EditForm>
+    
+    
+   
 }
 
-<!-- Modal Paciente -->
+
 @if (mostrarModalPaciente)
 {
     <div class="modal show d-block" tabindex="-1">
@@ -142,28 +138,29 @@ else
 
                         <div class="form-group">
                             <label>Nombre</label>
-                            <InputText class="form-control" @bind-Value="nuevoPaciente.NombrePersona" />
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Nombre" />
+                        </div>
+                        <div class="form-group">
+                            <label>DNI</label>
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.DNI" />
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Direccion" />
                         </div>
                         <div class="form-group">
                             <label>Sexo</label>
-                            <InputSelect class="form-control" @bind-Value="nuevoPaciente.SexoPersona">
+                            <InputSelect class="form-control" @bind-Value="nuevoPaciente.Persona.Sexo">
                                 <option value="Masculino">Masculino</option>
                                 <option value="Femenino">Femenino</option>
                                 <option value="Otro">Otro</option>
                             </InputSelect>
                         </div>
                         <div class="form-group">
-                            <label>DNI</label>
-                            <InputText class="form-control" @bind-Value="nuevoPaciente.DNIPersona" />
-                        </div>
-                        <div class="form-group">
-                            <label>Dirección</label>
-                            <InputText class="form-control" @bind-Value="nuevoPaciente.DireccionPersona" />
-                        </div>
-                        <div class="form-group">
                             <label>Edad</label>
-                            <InputText class="form-control" @bind-Value="nuevoPaciente.EdadPersona" />
+                            <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Edad" />
                         </div>
+                       
                         <div class="form-group">
                             <label>Obra Social</label>
                             <InputSelect class="form-control" @bind-Value="nuevoPaciente.ObraSocial">
@@ -228,15 +225,7 @@ else
                             <InputText class="form-control" @bind-Value="nuevoPaciente.DiagnosticoPresuntivo" />
                         </div>
                         <br />
-                        @if (eventoGuardado)
-                        {
-                            <div class="mt-3">
-                                <button class="btn btn-warning" type="button" @onclick="AbrirModalMoviles">
-                                    + Asignar Móvil
-                                </button>
-                            </div>
-                        }
-
+                        
 
                         <div class="mt-4">
                             <button class="btn btn-success me-2" type="submit">Guardar</button>
@@ -261,52 +250,15 @@ else
     <div class="alert alert-info mt-3">@Mensaje</div>
 }
 
-@if (mostrarModalMoviles)
-{
-    <div class="modal show d-block" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-info text-white">
-                    <h5 class="modal-title">Asignar Móvil</h5>
-                    <button type="button" class="btn-close" @onclick="CerrarModalMoviles"></button>
-                </div>
-                <div class="modal-body">
-                    <ul class="list-group">
-                        @foreach (var m in moviles)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@m.Patente - @m.TipoMovil (@m.disponibilidadMovil)</span>
-                                @if (m.disponibilidadMovil == DisponibilidadMovil.libre)
-                                {
-                                    <button class="btn btn-sm btn-success"
-                                            @onclick="() => AsignarMovil(m.Id, m.Patente)">
-                                        Asignar
-                                    </button>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-secondary">Ocupado</span>
-                                }
-                            </li>
-                        }
-                    </ul>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CerrarModalMoviles">Cancelar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
 
 @code {
-    // DTOs nuevos
-    PacienteDiagPresuntivoDTO nuevoPaciente = new();
-    EventoDiagPresuntivoListadoDTO evento = new()
+    
+    PacienteCrearDTO nuevoPaciente = new() { Persona = new PersonaCrearDTO() };
+    EventoCrearDTO evento = new()
     {
         colorEvento = ColorEvento.Verde,
-        FechaHora = DateTime.Now
+        FechaHora = DateTime.Now,
+        TipoEstadoId = 1 
     };
 
     List<CausaDTO> causas = new();
@@ -340,7 +292,7 @@ else
 
     private async Task GuardarEvento()
     {
-        var respEvento = await Http.Post<EventoDiagPresuntivoListadoDTO, int>("api/evento/CrearEventoConPaciente", evento);
+        var respEvento = await Http.Post<EventoCrearDTO, int>("api/evento/CrearEventoConPaciente", evento);
         if (respEvento.Error)
         {
             Mensaje = respEvento.ObtenerError();
@@ -349,50 +301,46 @@ else
 
         evento.Id = respEvento.Respuesta!;
         eventoGuardado = true;
-        Mensaje = "Evento guardado correctamente. Ahora podés asignar un móvil.";
+        Mensaje = "Evento guardado correctamente.";
+
+        Nav.NavigateTo("/eventos"); // ← Redirección automática
     }
 
-    private async Task AbrirModalMoviles()
-    {
-        var resp = await Http.Get<List<MovilListadoDTO>>("api/movil");
-        if (!resp.Error) moviles = resp.Respuesta ?? new();
-        mostrarModalMoviles = true;
-    }
+    
 
     private string GetCircleClass(ColorEvento color)
     {
-        if (evento.colorEvento == color)
-            return "rounded-circle d-inline-block border border-3 border-dark shadow";
-
-        return "rounded-circle d-inline-block border border-2 border-white";
+        return (evento.colorEvento == color)
+            ? "rounded-circle d-inline-block border border-3 border-white shadow"
+            : "rounded-circle d-inline-block border border-2 border-dark";
     }
 
-    private void CerrarModalMoviles() => mostrarModalMoviles = false;
-
-    private async Task AsignarMovil(int movilId, string patente)
-    {
-        var resp = await Http.Put<object, object>($"api/movil/{movilId}/asignarEvento/{evento.Id}", new { });
-        if (!resp.Error)
-        {
-            movilAsignado = patente;
-            Mensaje = $"Móvil asignado correctamente: {patente}";
-            mostrarModalMoviles = false;
-        }
-        else
-        {
-            Mensaje = $"Error al asignar móvil: {resp.ObtenerError()}";
-        }
-    }
-
-    private void Cancelar()
-    {
-        Nav.NavigateTo("/eventos");
-    }
-
+    
     private void AbrirModalPaciente()
     {
-        nuevoPaciente = new();
+        nuevoPaciente = new PacienteCrearDTO { Persona = new PersonaCrearDTO() };
         mostrarModalPaciente = true;
+    }
+
+    private void GuardarPaciente()
+    {
+        var copia = new PacienteCrearDTO
+        {
+            ObraSocial = nuevoPaciente.ObraSocial,
+            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo,
+            Persona = new PersonaCrearDTO
+            {
+                Nombre = nuevoPaciente.Persona.Nombre,
+                DNI = nuevoPaciente.Persona.DNI,
+                Direccion = nuevoPaciente.Persona.Direccion,
+                Sexo = nuevoPaciente.Persona.Sexo,
+                Edad = nuevoPaciente.Persona.Edad
+            }
+        };
+
+        evento.Pacientes.Add(copia);
+        mostrarModalPaciente = false;
+        Mensaje = $"Paciente {copia.Persona.Nombre} agregado.";
     }
 
     private void CerrarModal()
@@ -400,27 +348,20 @@ else
         mostrarModalPaciente = false;
     }
 
-    private void GuardarPaciente()
-    {
-        var copia = new PacienteDiagPresuntivoDTO
-        {
-            NombrePersona = nuevoPaciente.NombrePersona,
-            DNIPersona = nuevoPaciente.DNIPersona,
-            DireccionPersona = nuevoPaciente.DireccionPersona,
-            SexoPersona = nuevoPaciente.SexoPersona,
-            EdadPersona = nuevoPaciente.EdadPersona,
-            ObraSocial = nuevoPaciente.ObraSocial,
-            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo
-        };
+   
 
-        evento.Pacientes.Add(copia);
-        mostrarModalPaciente = false;
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/eventos");
     }
 
+ 
     private void VolverALista()
     {
         Nav.NavigateTo("/eventos");
     }
 }
+
+
 
 

@@ -14,5 +14,7 @@ namespace G1Emergency2025.Shared.DTO
         public string ObraSocial { get; set; } = "Ninguna";
         public PersonaCrearDTO Persona { get; set; } = new PersonaCrearDTO();
         public List<EventoPacienteDTO> Eventos { get; set; } = new ();
+
+        public string DiagnosticoPresuntivo { get; set; } = "Sin Diagnóstico";
     }
 }
