@@ -324,10 +324,10 @@ else
 
     private void GuardarPaciente()
     {
-       
         var copia = new PacienteCrearDTO
         {
             ObraSocial = nuevoPaciente.ObraSocial,
+            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo,
             Persona = new PersonaCrearDTO
             {
                 Nombre = nuevoPaciente.Persona.Nombre,
@@ -335,26 +335,13 @@ else
                 Direccion = nuevoPaciente.Persona.Direccion,
                 Sexo = nuevoPaciente.Persona.Sexo,
                 Edad = nuevoPaciente.Persona.Edad
-            },
-            Eventos = new List<EventoPacienteDTO>
-        {
-            new EventoPacienteDTO
-            {
-                EventoId = evento.Id, 
-                DiagnosticoPresuntivo = nuevoPaciente.Eventos.Any()
-                    ? nuevoPaciente.Eventos.First().DiagnosticoPresuntivo
-                    : "Sin Diagnóstico"
             }
-        }
         };
 
-        
         evento.Pacientes.Add(copia);
-
         mostrarModalPaciente = false;
         Mensaje = $"Paciente {copia.Persona.Nombre} agregado.";
     }
-
 
     private void CerrarModal()
     {
