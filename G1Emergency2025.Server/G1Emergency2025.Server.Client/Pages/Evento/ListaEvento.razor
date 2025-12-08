@@ -58,13 +58,10 @@ else
                         ColorEvento.Rojo => "bg-danger",
                         ColorEvento.Amarillo => "bg-warning text-dark",
                         ColorEvento.Verde => "bg-success",
-                      
                         _ => "bg-secondary"
                     };
 
-                    <tr class="@colorClase">
-                        
-
+                    <tr class="@colorClase" @key="evento.Id">
                         <td>@evento.Ubicacion</td>
                         <td>@evento.Telefono</td>
                         <td>
@@ -73,7 +70,6 @@ else
                         </td>
 
                         <td class="text-center align-middle p-0">
-
                             @if (evento.Pacientes != null && evento.Pacientes.Count > 0)
                             {
                                 <NavLink class="btn btn-sm btn-outline-dark px-1 py-0 text-dark"
@@ -87,8 +83,8 @@ else
                                 <span class="text-dark">–</span>
                             }
                         </td>
-                        <td class="estado-col text-center align-middle">
 
+                        <td class="estado-col text-center align-middle">
                             @if (evento.TipoEstado == "Finalizado")
                             {
                                 <span class="text-muted">@evento.TipoEstado</span>
@@ -99,7 +95,7 @@ else
                                         @onchange="e => CambiarEstado(evento.Id, int.Parse(e.Value!.ToString()))">
                                     @foreach (var estado in estadosDisponibles)
                                     {
-                                        <option value="@estado.Id" selected="@(estado.Id == evento.TipoEstadoId)">
+                                        <option value="@estado.Id" selected="@((estado.Id == evento.TipoEstadoId) ? "selected" : null)">
                                             @estado.TipoEstado
                                         </option>
                                     }
@@ -107,22 +103,17 @@ else
                             }
                         </td>
 
-
-
                         <td class="text-center" style="white-space:nowrap;">
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-outline-light" title="Ver evento" @onclick="() => VerEventoPorCodigo(evento.Codigo)">📄</button>
                                 <button class="btn btn-sm btn-outline-light me-1" title="Editar" @onclick="() => Editar(evento.Id)">✏</button>
                                 <button class="btn btn-sm btn-outline-light me-1" title="Borrar" @onclick="() => SolicitarConfirmacion(evento)">🗑</button>
-                               
                             </div>
-
-
-
                         </td>
                     </tr>
                 }
             </tbody>
+
         </table>
     </div>
 }
@@ -236,19 +227,23 @@ else
 
         if (!resp.Error)
         {
-            Mensaje = $"Estado del evento {eventoId} actualizado";
-
-            // 🔹 Si es finalizado, lo saco de la lista en memoria
-            var estadoFinalizado = estadosDisponibles.FirstOrDefault(e => e.Id == nuevoEstadoId)?.TipoEstado;
-            if (estadoFinalizado == "Finalizado")
+            var eventoActual = eventos?.FirstOrDefault(e => e.Id == eventoId);
+            if (eventoActual is not null)
             {
-                var evento = eventos?.FirstOrDefault(e => e.Id == eventoId);
-                if (evento is not null)
+                eventoActual.TipoEstadoId = nuevoEstadoId;
+                var estado = estadosDisponibles.FirstOrDefault(e => e.Id == nuevoEstadoId);
+                if (estado != null)
                 {
-                    eventos!.Remove(evento);
-                    StateHasChanged();
+                    eventoActual.TipoEstado = estado.TipoEstado;
+                }
+
+                if (eventoActual.TipoEstado == "Finalizado")
+                {
+                    eventos!.Remove(eventoActual);
                 }
             }
+
+            StateHasChanged();
         }
         else
         {
