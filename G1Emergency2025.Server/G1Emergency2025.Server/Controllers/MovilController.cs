@@ -35,9 +35,9 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("Id/{id:int}")]
-        public async Task<ActionResult<MovilDTO>> GetById(int id)
+        public async Task<ActionResult<MovilListadoDTO>> GetById(int id)
         {
-            var tipoProvincia = await repositorio.SelectById(id);
+            var tipoProvincia = await repositorio.SelectMovilPorId(id);
             if (tipoProvincia is null)
             {
                 return NotFound($"No existe el registro con el id: {id}.");
@@ -46,8 +46,9 @@ namespace Proyecto2025.Server.Controllers
             return Ok(tipoProvincia);
         }
 
+
         [HttpGet("Patente/{patente}")]
-        public async Task<ActionResult<MovilDTO>> GetListaPatente(string patente)
+        public async Task<ActionResult<MovilConEventosDTO>> GetListaPatente(string patente)
         {
             var lista = await repositorio.SelectListaMovilPorPatente(patente);
             if (lista == null)
@@ -58,7 +59,7 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("CodTipo/{cod}")]
-        public async Task<ActionResult<List<MovilDTO>>> GetListaCodTipoMovil(string cod)
+        public async Task<ActionResult<List<MovilConEventosDTO>>> GetListaCodTipoMovil(string cod)
         {
             var lista = await repositorio.SelectListaMovilPorCodTipoMovil(cod);
             if (lista == null)
@@ -69,7 +70,7 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("Tipo/{tipo}")]
-        public async Task<ActionResult<List<MovilDTO>>> GetListaTipoMovil(string tipo)
+        public async Task<ActionResult<List<MovilConEventosDTO>>> GetListaTipoMovil(string tipo)
         {
             var lista = await repositorio.SelectListaMovilPorTipoMovil(tipo);
             if (lista == null)
@@ -95,7 +96,7 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("ListaMovilPorDisponibilidad/{disponibilidadMovil}")]
-        public async Task<ActionResult<List<MovilDTO>>> GetListaTipoMovil(DisponibilidadMovil disponibilidadMovil)
+        public async Task<ActionResult<List<MovilListadoDTO>>> GetListaTipoMovil(DisponibilidadMovil disponibilidadMovil)
         {
             var lista = await repositorio.SelectListaMovilPorDisponibilidad(disponibilidadMovil);
             if (lista == null)

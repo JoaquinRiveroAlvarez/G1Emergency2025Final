@@ -20,6 +20,38 @@ namespace G1Emergency2025.Repositorio.Repositorios
         {
             this.context = context;
         }
+        public async Task<PacienteResumenDTO?> SelectPorId(int pacienteId)
+        {
+            var paciente = await context.Pacientes
+                .Include(p => p.Persona)
+                .Include(p => p.PacienteEventos)
+                    .ThenInclude(pe => pe.Eventos)
+                .Where(p => p.Id == pacienteId)
+                .Select(p => new PacienteResumenDTO
+                {
+                    Id = p.Id,
+                    ObraSocial = p.ObraSocial,
+                    NombrePersona = p.Persona!.Nombre,
+                    DNIPersona = p.Persona!.DNI,
+                    DireccionPersona = p.Persona!.Direccion,
+                    EdadPersona = p.Persona!.Edad,
+                    SexoPersona = p.Persona!.Sexo,
+                    HistoriaClinica = p.HistoriaClinica,
+
+                    Eventos = p.PacienteEventos
+                        .Select(pe => new EventoPacienteMostrarDTO
+                        {
+                            EventoId = pe.EventoId,
+                            CodigoEvento = pe.Eventos!.Codigo,
+                            DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return paciente;
+        }
+
         public async Task<PacienteResumenDTO?> SelectByObraSocial(string cod)
         {
             return await context.Set<PacienteResumenDTO>().FirstOrDefaultAsync(x => x.ObraSocial == cod);

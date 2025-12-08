@@ -17,6 +17,16 @@ namespace G1Emergency2025.Server.Controllers
         {
             this.repositorio = repositorio;
         }
+        [HttpGet("id/{id}")]
+        public async Task<ActionResult<PacienteResumenDTO>> GetPacientePorId(int id)
+        {
+            var paciente = await repositorio.SelectPorId(id);
+
+            if (paciente == null)
+                return NotFound(new { mensaje = "Paciente no encontrado" });
+
+            return Ok(paciente);
+        }
 
         [HttpGet]
         public async Task<ActionResult<List<PacienteListadoDTO>>> GetList()

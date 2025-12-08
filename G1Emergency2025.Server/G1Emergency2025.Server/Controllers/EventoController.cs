@@ -19,14 +19,35 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpGet("id/{id}")]
-        public async Task<ActionResult<EventoDTO>> GetEventoPorId(int id)
+        public async Task<ActionResult<EventoDiagPresuntivoListadoDTO>> GetEventoPorId(int id)
         {
-            var evento = await repositorio.SelectById(id);
+            var evento = await repositorio.SelectPorId(id);
 
             if (evento == null)
                 return NotFound(new { mensaje = "Evento no encontrado" });
 
             return Ok(evento);
+        }
+
+        [HttpGet("idMovil/{id}")]
+        public async Task<ActionResult<EventoDiagPresuntivoListadoDTO>> GetMovilPorId(int id)
+        {
+            var evento = await repositorio.SelectMovilPorId(id);
+
+            if (evento == null)
+                return NotFound(new { mensaje = "Movil no encontrado" });
+
+            return Ok(evento);
+        }
+
+        [HttpGet("ListaMovil")]
+        public async Task<IActionResult> GetListaMovil()
+        {
+            var lista = await repositorio.SelectListaMovil();
+            if (lista == null || !lista.Any())
+                return NotFound("No hay moviles registrados.");
+
+            return Ok(lista);
         }
 
         [HttpGet("ListaEvento")]
@@ -141,12 +162,12 @@ namespace Proyecto2025.Server.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> PostEvento([FromBody] EventoDTO dto)
+        [HttpPost("CrearEventoConPaciente")]
+        public async Task<ActionResult> PostEventoPaciente([FromBody] EventoCrearDTO dto)
         {
             try
             {
-                int id = await repositorio.InsertarEvento(dto);
+                int id = await repositorio.InsertarEventoPaciente(dto);
                 return Ok(id);
             }
             catch (ApplicationException ex)
@@ -158,12 +179,86 @@ namespace Proyecto2025.Server.Controllers
                 return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
             }
         }
-        [HttpPost("CrearEventoConPaciente")]
-        public async Task<ActionResult> PostEventoPaciente([FromBody] EventoCrearDTO dto)
+
+        [HttpPut("{id}/estadoEvento")]
+        public async Task<IActionResult> ActualizarEstadoEvento(int id, [FromBody] ActualizarEstadoEventoDTO dto)
         {
             try
             {
-                int id = await repositorio.InsertarEventoPaciente(dto);
+                var actualizado = await repositorio.ActualizarEstadoEvento(id, dto.TipoEstadoId);
+
+                if (!actualizado)
+                    return NotFound(new { message = $"No se encontró el evento con ID {id}" });
+
+                return Ok(new { estadoActualizado = dto.TipoEstadoId });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}/pacienteEvento")]
+        public async Task<ActionResult> PutEventoPaciente(int id, [FromBody] EventoActualizarDTO dto)
+        {
+            try
+            {
+                var actualizado = await repositorio.ActualizarEventoPaciente(id, dto);
+
+                if (!actualizado)
+                    return NotFound(new { mensaje = "Evento no encontrado" });
+
+                return Ok(new { mensaje = "Evento actualizado correctamente" });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
+            }
+        }
+
+        [HttpPut("{id}/AsignarMovilesEvento")]
+        public async Task<ActionResult> PutAsignarMovilesEvento(int id, [FromBody] AsignarMovilesEventoDTO dto)
+        {
+            try
+            {
+                var actualizado = await repositorio.ActualizarMovilesAsignadosEvento(id, dto);
+
+                if (!actualizado)
+                    return NotFound(new { mensaje = "Evento no encontrado" });
+
+                return Ok(new { mensaje = "Evento actualizado correctamente" });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { mensaje = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var eliminado = await repositorio.DeleteEvento(id);
+            if (!eliminado)
+                return NotFound();
+
+            return NoContent();
+        }
+
+        //Antiguos post y put
+        [HttpPost]
+        public async Task<IActionResult> PostEvento([FromBody] EventoDTO dto)
+        {
+            try
+            {
+                int id = await repositorio.InsertarEvento(dto);
                 return Ok(id);
             }
             catch (ApplicationException ex)
@@ -189,93 +284,5 @@ namespace Proyecto2025.Server.Controllers
 
             return Ok($"El evento con Id {id} fue actualizado correctamente.");
         }
-
-        [HttpPut("{id}/estadoEvento")]
-        public async Task<IActionResult> ActualizarEstadoEvento(int id, [FromBody] ActualizarEstadoEventoDTO dto)
-        {
-            try
-            {
-                var actualizado = await repositorio.ActualizarEstadoEvento(id, dto.TipoEstadoId);
-
-                if (!actualizado)
-                    return NotFound(new { message = $"No se encontró el evento con ID {id}" });
-
-                return Ok(new { estadoActualizado = dto.TipoEstadoId });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-        [HttpPut("{id}/pacienteEvento")]
-        public async Task<ActionResult> PutEventoPaciente(int id, [FromBody] EventoCrearDTO dto)
-        {
-            try
-            {
-                var actualizado = await repositorio.ActualizarEventoPaciente(id, dto);
-
-                if (!actualizado)
-                    return NotFound(new { mensaje = "Evento no encontrado" });
-
-                return Ok(new { mensaje = "Evento actualizado correctamente" });
-            }
-            catch (ApplicationException ex)
-            {
-                return BadRequest(new { mensaje = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
-            }
-        }
-
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            var eliminado = await repositorio.DeleteEvento(id);
-            if (!eliminado)
-                return NotFound();
-
-            return NoContent();
-        }
-        //[HttpPut("{id:int}")]
-        //public async Task<ActionResult> Put(int id, EventoDTO dto)
-        //{
-        //    if (id != dto.Id)
-        //    {
-        //        return BadRequest("El Id del evento no coincide con el DTO enviado.");
-        //    }
-
-        //    var entidad = await repositorio.SelectById(id);
-
-        //    if (entidad == null)
-        //    {
-        //        return NotFound($"No se encontró el evento con Id {id}");
-        //    }
-
-        //    entidad.Codigo = dto.Codigo;
-        //    entidad.Ubicacion = dto.Ubicacion;
-        //    entidad.Telefono = dto.Telefono;
-        //    entidad.FechaHora = dto.FechaHora;
-        //    entidad.colorEvento = dto.colorEvento;
-        //    entidad.CausaId = dto.CausaId;
-        //    entidad.TipoEstadoId = dto.TipoEstadoId;
-
-        //    var resultado = await repositorio.Update(id, entidad);
-        //    if (!resultado)
-        //    {
-        //        return BadRequest("Error al actualizar los datos del evento.");
-        //    }
-
-        //    var relacionesOk = await repositorio.ActualizarRelacionesEvento(id, dto);
-
-        //    if (!relacionesOk)
-        //    {
-        //        return BadRequest("Error al actualizar las relaciones del evento.");
-        //    }
-
-        //    return Ok($"El evento con Id {id} fue actualizado correctamente.");
-        //}
     }
 }

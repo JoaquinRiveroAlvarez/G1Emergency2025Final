@@ -121,7 +121,57 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             return evento;
         }
+        public async Task<MovilListadoDTO?> SelectMovilPorId(int id)
+        {
+            var movil = await context.Movils
+                .Include(m => m.TipoMovils)
+                .Include(m => m.EventoMovils)
+                    .ThenInclude(em => em.Evento)
+                .Where(m => m.Id == id)
+                .Select(m => new MovilListadoDTO
+                {
+                    Id = m.Id,
+                    disponibilidadMovil = m.disponibilidadMovil,
+                    Patente = m.Patente,
+                    TipoMovil = m.TipoMovils!.Tipo,
+                    CodigoMovil = m.TipoMovils!.Codigo,
 
+                    Eventos = m.EventoMovils
+                        .Select(em => new EventoMovilResumenDTO
+                        {
+                            EventoId = em.Evento!.Id,
+                            Codigo = em.Evento.Codigo,
+                            colorEvento = em.Evento.colorEvento,
+                            FechaHora = em.Evento.FechaHora,
+                            Ubicacion = em.Evento.Ubicacion,
+                            Relato = em.Evento.Relato,
+                            TipoEstado = em.Evento.TipoEstados!.Tipo
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return movil;
+        }
+        public async Task<List<MovilListadoDTO>> SelectListaMovil()
+        {
+            var lista = await context.Movils
+                .Include(m => m.TipoMovils)
+                .Include(m => m.EventoMovils)
+                    .ThenInclude(em => em.Evento)
+                        .ThenInclude(e => e!.TipoEstados)
+                .Select(m => new MovilListadoDTO
+                {
+                    Id = m.Id,
+                    disponibilidadMovil = m.disponibilidadMovil,
+                    Patente = m.Patente,
+                    TipoMovil = m.TipoMovils!.Tipo,
+                    CodigoMovil = m.TipoMovils!.Codigo,
+                })
+                .ToListAsync();
+
+            return lista;
+        }
 
         public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId)
         {
@@ -1252,12 +1302,11 @@ namespace G1Emergency2025.Repositorio.Repositorios
             await context.SaveChangesAsync();
             return true;
         }
-        public async Task<bool> ActualizarEventoPaciente(int id, EventoCrearDTO dto)
+        public async Task<bool> ActualizarEventoPaciente(int id, EventoActualizarDTO dto)
         {
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Buscar Evento existente
                 var evento = await context.Eventos
                     .Include(e => e.PacienteEventos)
                     .Include(e => e.EventoUsuarios)
@@ -1268,7 +1317,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 if (evento == null)
                     return false;
 
-                // 2. Actualizar datos básicos del evento
                 evento.Relato = dto.Relato;
                 evento.Ubicacion = dto.Ubicacion;
                 evento.Telefono = dto.Telefono;
@@ -1279,10 +1327,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
                 await context.SaveChangesAsync();
 
-                // 3. Actualizar pacientes asociados
                 evento.PacienteEventos.Clear();
 
-                // Pacientes existentes (por Id)
                 if (dto.PacienteIds != null && dto.PacienteIds.Any())
                 {
                     foreach (var pid in dto.PacienteIds)
@@ -1296,7 +1342,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     }
                 }
 
-                // Pacientes nuevos (DTO completo)
                 if (dto.Pacientes != null && dto.Pacientes.Any())
                 {
                     foreach (var pacienteDto in dto.Pacientes)
@@ -1333,7 +1378,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     }
                 }
 
-                // 4. Actualizar otras relaciones N:M
                 evento.EventoUsuarios.Clear();
                 if (dto.UsuarioIds != null && dto.UsuarioIds.Any())
                 {
@@ -1363,7 +1407,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     await historialEventoRepo.RegistrarModificacionEvento(evento.Id, usuarioAleatorio.Id);
                 }
 
-                // 5. Confirmar transacción
                 await transaction.CommitAsync();
                 return true;
             }
@@ -1373,7 +1416,42 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 throw;
             }
         }
+        public async Task<bool> ActualizarMovilesAsignadosEvento(int id, AsignarMovilesEventoDTO dto)
+        {
+            using var transaction = await context.Database.BeginTransactionAsync();
+            try
+            {
+                var evento = await context.Eventos
+                    .Include(e => e.EventoMovils)
+                    .FirstOrDefaultAsync(e => e.Id == id);
 
+                if (evento == null)
+                    return false;
+
+                evento.EventoMovils.Clear();
+                if (dto.MovilIds != null && dto.MovilIds.Any())
+                {
+                    foreach (var mid in dto.MovilIds)
+                        evento.EventoMovils.Add(new EventoMovil { MovilId = mid, EventoId = evento.Id });
+                }
+
+                await context.SaveChangesAsync();
+
+                var usuarioAleatorio = await usuarioRepo.ObtenerUsuarioAleatorio();
+                if (usuarioAleatorio != null)
+                {
+                    await historialEventoRepo.RegistrarModificacionEvento(evento.Id, usuarioAleatorio.Id);
+                }
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
         public async Task<bool> DeleteEvento(int id)
         {
             var evento = await context.Eventos
@@ -1386,12 +1464,11 @@ namespace G1Emergency2025.Repositorio.Repositorios
             if (evento == null)
                 return false;
 
-            // Eliminar relaciones N:M manualmente
             context.RemoveRange(evento.PacienteEventos);
             context.RemoveRange(evento.EventoUsuarios);
             context.RemoveRange(evento.EventoLugarHechos);
+            context.RemoveRange(evento.EventoMovils);
 
-            // Finalmente eliminar el evento
             context.Eventos.Remove(evento);
 
             await context.SaveChangesAsync();

@@ -6,8 +6,10 @@ namespace G1Emergency2025.Repositorio.Repositorios
     public interface IEventoRepositorio : IRepositorio<Evento>
     {
         Task<EventoDiagPresuntivoListadoDTO?> SelectPorId(int eventoId);
+        Task<MovilListadoDTO?> SelectMovilPorId(int id);
         Task<List<EventoListadoDTO>> SelectListaEventoReciente();
         Task<List<EventoListadoDTO>> SelectListaEvento();
+        Task<List<MovilListadoDTO>> SelectListaMovil();
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId);
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorNombrePaciente(string nombrePaciente);
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorHistoriaClinicaPaciente(string historiaClinica);
@@ -19,7 +21,8 @@ namespace G1Emergency2025.Repositorio.Repositorios
         Task<int> InsertarEvento(EventoDTO dto);
         Task<int> InsertarEventoPaciente(EventoCrearDTO dto);
         Task<bool> ActualizarEvento(int id, EventoDTO dto);
-        Task<bool> ActualizarEventoPaciente(int id, EventoCrearDTO dto);
+        Task<bool> ActualizarEventoPaciente(int id, EventoActualizarDTO dto);
+        Task<bool> ActualizarMovilesAsignadosEvento(int id, AsignarMovilesEventoDTO dto);
         Task<bool> ActualizarEstadoEvento(int id, int estadoId);
         Task<bool> DeleteEvento(int id);
         Task<bool> ActualizarRelacionesEvento(int id, EventoDTO dto);

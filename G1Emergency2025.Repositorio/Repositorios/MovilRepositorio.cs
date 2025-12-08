@@ -30,12 +30,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
             context.EventoMovils.Add(rel);
             await context.SaveChangesAsync();
         }
-        public async Task<List<MovilListadoDTO>> SelectListaMovil()
+        public async Task<MovilListadoDTO?> SelectMovilPorId(int id)
         {
-            var lista = await context.Movils
+            var movil = await context.Movils
                 .Include(m => m.TipoMovils)
                 .Include(m => m.EventoMovils)
                     .ThenInclude(em => em.Evento)
+                .Where(m => m.Id == id)
                 .Select(m => new MovilListadoDTO
                 {
                     Id = m.Id,
@@ -45,13 +46,55 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     CodigoMovil = m.TipoMovils!.Codigo,
 
                     Eventos = m.EventoMovils
-                        .Select(em => em.Evento!.Codigo)
+                        .Select(em => new EventoMovilResumenDTO
+                        {
+                            EventoId = em.Evento!.Id,
+                            Codigo = em.Evento.Codigo,
+                            colorEvento = em.Evento.colorEvento,
+                            FechaHora = em.Evento.FechaHora,
+                            Ubicacion = em.Evento.Ubicacion,
+                            Relato = em.Evento.Relato,
+                            TipoEstado = em.Evento.TipoEstados!.Tipo
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            return movil;
+        }
+        public async Task<List<MovilListadoDTO>> SelectListaMovil()
+        {
+            var lista = await context.Movils
+                .Include(m => m.TipoMovils)
+                .Include(m => m.EventoMovils)
+                    .ThenInclude(em => em.Evento)
+                        .ThenInclude(e => e!.TipoEstados)
+                .Select(m => new MovilListadoDTO
+                {
+                    Id = m.Id,
+                    disponibilidadMovil = m.disponibilidadMovil,
+                    Patente = m.Patente,
+                    TipoMovil = m.TipoMovils!.Tipo,
+                    CodigoMovil = m.TipoMovils!.Codigo,
+
+                    Eventos = m.EventoMovils
+                        .Select(em => new EventoMovilResumenDTO
+                        {
+                            EventoId = em.Evento!.Id,
+                            Codigo = em.Evento.Codigo,
+                            colorEvento = em.Evento.colorEvento,
+                            FechaHora = em.Evento.FechaHora,
+                            Ubicacion = em.Evento.Ubicacion,
+                            Relato = em.Evento.Relato,
+                            TipoEstado = em.Evento.TipoEstados!.Tipo
+                        })
                         .ToList()
                 })
                 .ToListAsync();
 
             return lista;
         }
+
         public async Task<MovilConEventosDTO> SelectListaMovilPorPatente(string patente)
         {
             var movil = await context.Movils
@@ -143,37 +186,5 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .ToListAsync();
             return lista;
         }
-
-        //public async Task<List<MovilesPorDisponibilidadDTO>> SelectListaMovilAgrupada()
-        //{
-        //    var lista = await context.Movils
-        //        .Include(m => m.TipoMovils)
-        //        .Select(m => new
-        //        {
-        //            Disponibilidad = m.disponibilidadMovil,
-        //            Patente = m.Patente,
-        //            TipoMovil = m.TipoMovils!.Tipo
-        //        })
-        //        .ToListAsync();
-
-        //    var agrupados = lista
-        //        .GroupBy(m => m.Disponibilidad)
-        //        .Select(g => new MovilesPorDisponibilidadDTO
-        //        {
-        //            Disponibilidad = g.Key,
-        //            Moviles = g
-        //                .GroupBy(m => new { m.Patente, m.TipoMovil })
-        //                .Select(mg => new MovilConEventosDTO
-        //                {
-        //                    Patente = mg.Key.Patente,
-        //                    TipoMovil = mg.Key.TipoMovil,
-        //                    Eventos = mg.Select(x => x.Evento).Distinct().ToList()
-        //                })
-        //                .ToList()
-        //        })
-        //        .ToList();
-
-        //    return agrupados;
-        //}
     }
 }
