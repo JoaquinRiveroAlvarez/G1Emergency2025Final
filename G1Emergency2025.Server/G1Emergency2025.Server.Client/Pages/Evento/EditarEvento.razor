@@ -1,8 +1,9 @@
-﻿@page "/eventos/editar/{Id:int}"
+﻿@using G1Emergency2025.Shared.Enum;
+@page "/eventos/editar/{Id:int}"
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
-<h3 class="text-light">Editar Evento</h3>
+<h3 class="text-light">Editar Evento </h3>
 
 @if (cargando)
 {
@@ -43,28 +44,47 @@ else
             <InputTextArea class="form-control" @bind-Value="evento.Relato" />
         </div>
 
-        <div class="row mb-3">
+        <div class="row mb-3 align-items-center">
             <div class="col-md-4">
                 <label class="form-label text-light">Color del Evento</label>
-                <InputSelect class="form-control" @bind-Value="evento.colorEvento">
-                    @foreach (var color in Enum.GetValues<ColorEvento>())
-                    {
-                        <option value="@color">@color</option>
-                    }
-                </InputSelect>
+                <InputRadioGroup @bind-Value="evento.colorEvento">
+                    <div class="d-flex gap-3">
+                        <div>
+                            <InputRadio class="d-none" id="colorVerde" Value="ColorEvento.Verde" />
+                            <label for="colorVerde">
+                                <span class="@GetCircleClass(ColorEvento.Verde)"
+                                      style="width: 24px; height: 24px; background-color: green; cursor: pointer;"></span>
+                            </label>
+                        </div>
+                        <div>
+                            <InputRadio class="d-none" id="colorRojo" Value="ColorEvento.Rojo" />
+                            <label for="colorRojo">
+                                <span class="@GetCircleClass(ColorEvento.Rojo)"
+                                      style="width: 24px; height: 24px; background-color: red; cursor: pointer;"></span>
+                            </label>
+                        </div>
+                        <div>
+                            <InputRadio class="d-none" id="colorAmarillo" Value="ColorEvento.Amarillo" />
+                            <label for="colorAmarillo">
+                                <span class="@GetCircleClass(ColorEvento.Amarillo)"
+                                      style="width: 24px; height: 24px; background-color: yellow; cursor: pointer;"></span>
+                            </label>
+                        </div>
+                    </div>
+                </InputRadioGroup>
                 <ValidationMessage For="@(() => evento.colorEvento)" />
             </div>
 
             <div class="col-md-4">
                 <label class="form-label text-light">Causa</label>
-                <InputSelect class="form-control" @bind-Value="evento.Causa">
+                <InputSelect class="form-control" @bind-Value="evento.CausaId">
                     <option value="0">-- Seleccionar causa --</option>
                     @foreach (var c in causas)
                     {
                         <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
                     }
                 </InputSelect>
-                <ValidationMessage For="@(() => evento.Causa)" />
+                <ValidationMessage For="@(() => evento.CausaId)" />
             </div>
 
             <div class="col-md-4">
@@ -308,7 +328,7 @@ else
                             </div>
                             <div class="form-group">
                                 <label>Obra Social</label>
-                                <InputText class="form-control" @bind-Value="pacienteEditar.ObraSocial" />
+                                <InputSelect class="form-control" @bind-Value="pacienteEditar.ObraSocial" />
                                 <ValidationMessage For="@(() => pacienteEditar.ObraSocial)" />
                             </div>
 
@@ -354,47 +374,43 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
-    private EventoPacienteDiagPresuntivoListadoDTO? evento;
-
+    private EventoActualizarDTO? evento;
     private List<CausaDTO> causas = new();
     private List<TipoEstadoDTO> tipoestados = new();
-    private List<UsuarioResumenDTO> usuarios = new();
-    private List<LugarHechoResumenDTO> lugares = new();
-
     private string Mensaje = "";
     private bool cargando = true;
     private bool mostrarModalConfirmacion = false;
 
-    // Pacientes existentes cargados desde el evento
+    // Pacientes asociados al evento
     private List<PacienteDiagPresuntivoDTO> pacienteact = new();
 
-    // Paciente en edición (se recibe como PacienteDTO y se mapea)
+    // Paciente en edición
     private PacienteDiagPresuntivoDTO pacienteEditar = new();
 
     // Paciente a eliminar
     private PacienteDiagPresuntivoDTO? pacienteAEliminar;
 
-    // Pacientes nuevos (en memoria)
+    // Pacientes nuevos en memoria
     private List<PacienteDiagPresuntivoDTO> pacientesNuevos = new();
 
-    // Pacientes editados (solo Ids)
+    // Ids de pacientes editados
     private List<int> pacientesEditados = new();
 
-    // Pacientes eliminados (solo Ids)
+    // Ids de pacientes eliminados
     private List<int> pacientesEliminados = new();
 
     // Paciente que se está creando en el modal
     private PacienteDiagPresuntivoDTO nuevoPaciente = new();
-
+    
     private bool mostrarModalPaciente = false;
     private bool mostrarModalEditar = false;
     private bool mostrarModalConfirmacionPaciente = false;
+
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            // Catálogos
             var respTipoEstados = await Http.Get<List<TipoEstadoDTO>>("api/tipoestado");
             if (!respTipoEstados.Error) tipoestados = respTipoEstados.Respuesta!;
 
@@ -402,13 +418,23 @@ else
             if (!respCausas.Error) causas = respCausas.Respuesta!;
 
             // Cargar evento completo con pacientes
-            var respEvento = await Http.Get<EventoPacienteDiagPresuntivoListadoDTO>($"api/evento/id/{Id}");
+            var respEvento = await Http.Get<EventoDiagPresuntivoListadoDTO>($"api/evento/id/{Id}");
             if (!respEvento.Error && respEvento.Respuesta is not null)
             {
-                evento = respEvento.Respuesta;
+                var e = respEvento.Respuesta!;
+                evento = new EventoActualizarDTO
+                {
+                    Id = e.Id,
+                    Relato = e.Relato,
+                    colorEvento = e.colorEvento,
+                    Ubicacion = e.Ubicacion,
+                    Telefono = e.Telefono,
+                    FechaHora = e.FechaHora,
+                    CausaId = e.CausaId,
+                    TipoEstadoId = e.TipoEstadoId
+                };
 
-                // Poblar pacientes existentes directamente
-                pacienteact = evento.Pacientes?.ToList() ?? new List<PacienteDiagPresuntivoDTO>();
+                pacienteact = e.Pacientes?.ToList() ?? new List<PacienteDiagPresuntivoDTO>();
             }
             else
             {
@@ -422,6 +448,7 @@ else
 
         cargando = false;
     }
+
 
 
 
@@ -453,55 +480,68 @@ else
     {
         mostrarModalConfirmacion = false;
 
-        // 1) Actualizar datos del evento + pacientes asociados
-        var dto = new EventoPacienteDiagPresuntivoListadoDTO
+        var idsAsociados = pacienteact
+            .Where(p => !pacientesEliminados.Contains(p.Id))
+            .Select(p => p.Id)
+            .Where(id => id > 0)
+            .ToList();
+
+        var nuevosParaCrear = pacientesNuevos.Select(p => new PacienteCrearDTO).ToList();
+        {
+            ObraSocial = p.ObraSocial,
+            Persona = new PersonaCrearDTO
+            {
+                Nombre = p.NombrePersona,
+                DNI = p.DNIPersona,
+                Direccion = p.DireccionPersona,
+                Sexo = p.SexoPersona,
+                Edad = p.EdadPersona
+            }
+        }
+
+        var dto = new EventoActualizarDTO
         {
             Id = evento!.Id,
-            Codigo = evento.Codigo,
-            Relato = evento.Relato,            // si tu DTO lo tiene
+            Relato = evento.Relato,
             colorEvento = evento.colorEvento,
             Ubicacion = evento.Ubicacion,
             Telefono = evento.Telefono,
             FechaHora = evento.FechaHora,
-            Causa = evento.Causa,
+            CausaId = evento.CausaId,
             TipoEstadoId = evento.TipoEstadoId,
-            TipoEstado = evento.TipoEstado,
-            Pacientes = pacienteact.Concat(pacientesNuevos).ToList()
+            PacienteIds = idsAsociados,
+            Pacientes = nuevosParaCrear
         };
 
-        var respEvento = await Http.Put<EventoPacienteDiagPresuntivoListadoDTO, bool>(
-            $"api/evento/{Id}/pacienteEvento", dto);
-
+        var respEvento = await Http.Put<EventoActualizarDTO, bool>($"api/evento/{Id}/pacienteEvento", dto);
         if (respEvento.Error)
         {
             Mensaje = respEvento.ObtenerError();
             return;
         }
 
-        // 2) Persistir pacientes editados
+        // Persistir datos personales de pacientes editados
         foreach (var idEditado in pacientesEditados)
         {
             var paciente = pacienteact.FirstOrDefault(p => p.Id == idEditado);
             if (paciente is null) continue;
 
             var dtoActualizar = new PacienteActualizarDTO
+            {
+                Id = paciente.Id,
+                ObraSocial = paciente.ObraSocial,
+                PersonaDTO = new PersonaDTO
                 {
-                    Id = paciente.Id,
-                    ObraSocial = paciente.ObraSocial,
-                    PersonaDTO = new PersonaDTO
-                    {
-                        Nombre = paciente.NombrePersona,
-                        DNI = paciente.DNIPersona,
-                        Direccion = paciente.DireccionPersona,
-                        Sexo = paciente.SexoPersona,
-                        Edad = paciente.EdadPersona
-                    },
-                    Eventos = new List<EventoPacienteDTO>() // vacío en actualización de datos personales
-                };
+                    Nombre = paciente.NombrePersona,
+                    DNI = paciente.DNIPersona,
+                    Direccion = paciente.DireccionPersona,
+                    Sexo = paciente.SexoPersona,
+                    Edad = paciente.EdadPersona
+                },
+                Eventos = new List<EventoPacienteDTO>()
+            };
 
-            var respPaciente = await Http.Put<PacienteActualizarDTO, bool>(
-                $"api/paciente/{paciente.Id}", dtoActualizar);
-
+            var respPaciente = await Http.Put<PacienteActualizarDTO, bool>($"api/paciente/{paciente.Id}", dtoActualizar);
             if (respPaciente.Error)
             {
                 Mensaje = $"Error actualizando paciente {paciente.NombrePersona}: {respPaciente.ObtenerError()}";
@@ -509,25 +549,12 @@ else
             }
         }
 
-        // 3) Borrar pacientes eliminados
-        foreach (var idEliminado in pacientesEliminados)
-        {
-            var respDelete = await Http.Delete($"api/paciente/{idEliminado}");
-            if (respDelete.Error)
-            {
-                Mensaje = $"Error borrando paciente con Id {idEliminado}: {respDelete.ObtenerError()}";
-                return;
-            }
-        }
-
-        // 4) Navegar al listado si todo salió bien
         Nav.NavigateTo("/eventos", forceLoad: true);
-
-        // 5) Limpiar listas temporales
         pacientesNuevos.Clear();
         pacientesEditados.Clear();
         pacientesEliminados.Clear();
     }
+
 
 
 
@@ -550,27 +577,35 @@ else
         Mensaje = $"Paciente {copia.NombrePersona} agregado en memoria.";
     }
 
+
     // ABRIR MODAL DE EDICIÓN
     private async Task AbrirModalEditarPaciente(int pacienteId)
     {
-        var resp = await Http.Get<PacienteDTO>($"api/paciente/id/{pacienteId}");
+        var resp = await Http.Get<PacienteDTO>($"api/paciente/Id/{pacienteId}");
         if (!resp.Error && resp.Respuesta is not null)
         {
             var p = resp.Respuesta;
+
             pacienteEditar = new PacienteDiagPresuntivoDTO
             {
-               
-                NombrePersona = p.NombrePersona,
+                Id = pacienteId, // ✅ asegurá el Id
+                ObraSocial = p.ObraSocial,
+                NombrePersona = p.PersonaDTO.Nombre,
                 DNIPersona = p.PersonaDTO.DNI,
                 DireccionPersona = p.PersonaDTO.Direccion,
-                SexoPersona = p.PersonaDTO.Sexo,
-                EdadPersona = p.PersonaDTO.Edad,
-                ObraSocial = p.ObraSocial
+                SexoPersona = p.PersonaDTO.Sexo, // ✅ enum → string
+                EdadPersona = p.PersonaDTO.Edad
             };
 
             mostrarModalEditar = true;
         }
+        else
+        {
+            Mensaje = resp.ObtenerError();
+        }
     }
+
+
 
 
     // GUARDAR PACIENTE EDITADO
@@ -592,13 +627,14 @@ else
         // Actualizar en memoria los datos del paciente
         pacienteact[idx] = pacienteEditar;
 
-        // Marcar como editado para persistir en BD después (en GuardarCambios)
+        // Marcar como editado para persistir en BD después
         if (!pacientesEditados.Contains(pacienteEditar.Id))
             pacientesEditados.Add(pacienteEditar.Id);
 
         mostrarModalEditar = false;
         Mensaje = $"Paciente {pacienteEditar.NombrePersona} editado en memoria.";
     }
+
 
 
     // CERRAR MODAL DE EDICIÓN
@@ -608,12 +644,12 @@ else
     }
 
     // SOLICITAR CONFIRMACIÓN DE BORRADO
+    // SOLICITAR CONFIRMACIÓN DE BORRADO
     private void SolicitarConfirmacionPaciente(PacienteDiagPresuntivoDTO paciente)
     {
         pacienteAEliminar = paciente;
         mostrarModalConfirmacionPaciente = true;
     }
-
 
     private void CancelarConfirmacionPaciente()
     {
@@ -628,11 +664,11 @@ else
             // Quitar de la lista en memoria
             pacienteact.Remove(pacienteAEliminar);
 
-            // Marcar para eliminación en BD al guardar el evento
+            // Marcar para desasociación del evento
             if (!pacientesEliminados.Contains(pacienteAEliminar.Id))
                 pacientesEliminados.Add(pacienteAEliminar.Id);
 
-            Mensaje = $"Paciente {pacienteAEliminar.NombrePersona} marcado para eliminación.";
+            Mensaje = $"Paciente {pacienteAEliminar.NombrePersona} marcado para eliminar del evento.";
         }
 
         pacienteAEliminar = null;
@@ -640,6 +676,13 @@ else
     }
 
 
+    private string GetCircleClass(ColorEvento color)
+    {
+        if (evento.colorEvento == color)
+            return "rounded-circle d-inline-block border border-3 border-white";
+
+        return "rounded-circle d-inline-block border border-2 border-dark shadow";
+    }
 
     private void Volver()
     {
