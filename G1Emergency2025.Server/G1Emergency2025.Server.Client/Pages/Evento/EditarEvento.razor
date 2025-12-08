@@ -354,11 +354,13 @@ else
 
 @code {
     [Parameter] public int Id { get; set; }
-    private EventoDiagPresuntivoListadoDTO? evento;
+    private EventoPacienteDiagPresuntivoListadoDTO? evento;
+
     private List<CausaDTO> causas = new();
     private List<TipoEstadoDTO> tipoestados = new();
     private List<UsuarioResumenDTO> usuarios = new();
     private List<LugarHechoResumenDTO> lugares = new();
+
     private string Mensaje = "";
     private bool cargando = true;
     private bool mostrarModalConfirmacion = false;
@@ -366,13 +368,13 @@ else
     // Pacientes existentes cargados desde el evento
     private List<PacienteDiagPresuntivoDTO> pacienteact = new();
 
-    // Paciente en edición
+    // Paciente en edición (se recibe como PacienteDTO y se mapea)
     private PacienteDiagPresuntivoDTO pacienteEditar = new();
 
-    // Paciente a eliminar (para el modal de confirmación de borrado)
+    // Paciente a eliminar
     private PacienteDiagPresuntivoDTO? pacienteAEliminar;
 
-    // Pacientes nuevos (se agregan en memoria desde el modal)
+    // Pacientes nuevos (en memoria)
     private List<PacienteDiagPresuntivoDTO> pacientesNuevos = new();
 
     // Pacientes editados (solo Ids)
@@ -383,7 +385,6 @@ else
 
     // Paciente que se está creando en el modal
     private PacienteDiagPresuntivoDTO nuevoPaciente = new();
-   
 
     private bool mostrarModalPaciente = false;
     private bool mostrarModalEditar = false;
@@ -393,20 +394,21 @@ else
     {
         try
         {
+            // Catálogos
             var respTipoEstados = await Http.Get<List<TipoEstadoDTO>>("api/tipoestado");
             if (!respTipoEstados.Error) tipoestados = respTipoEstados.Respuesta!;
 
             var respCausas = await Http.Get<List<CausaDTO>>("api/causa");
             if (!respCausas.Error) causas = respCausas.Respuesta!;
 
-            // 2) Cargar evento
-            var respEvento = await Http.Get<EventoDiagPresuntivoListadoDTO>($"api/evento/id/{Id}");
+            // Cargar evento completo con pacientes
+            var respEvento = await Http.Get<EventoPacienteDiagPresuntivoListadoDTO>($"api/evento/id/{Id}");
             if (!respEvento.Error && respEvento.Respuesta is not null)
             {
                 evento = respEvento.Respuesta;
 
-                // 3) Poblar pacientes existentes directamente
-                pacienteact = evento.Pacientes.ToList();
+                // Poblar pacientes existentes directamente
+                pacienteact = evento.Pacientes?.ToList() ?? new List<PacienteDiagPresuntivoDTO>();
             }
             else
             {
@@ -420,6 +422,7 @@ else
 
         cargando = false;
     }
+
 
 
 
@@ -450,21 +453,25 @@ else
     {
         mostrarModalConfirmacion = false;
 
-        // 1) Actualizar datos del evento + agregar pacientes nuevos
-        var dto = new EventoDiagPresuntivoListadoDTO
+        // 1) Actualizar datos del evento + pacientes asociados
+        var dto = new EventoPacienteDiagPresuntivoListadoDTO
         {
             Id = evento!.Id,
-            Relato = evento.Relato,
+            Codigo = evento.Codigo,
+            Relato = evento.Relato,            // si tu DTO lo tiene
             colorEvento = evento.colorEvento,
             Ubicacion = evento.Ubicacion,
             Telefono = evento.Telefono,
             FechaHora = evento.FechaHora,
             Causa = evento.Causa,
             TipoEstadoId = evento.TipoEstadoId,
-            Pacientes = evento.Pacientes //solo los nuevos
+            TipoEstado = evento.TipoEstado,
+            Pacientes = pacienteact.Concat(pacientesNuevos).ToList()
         };
 
-        var respEvento = await Http.Put<EventoDiagPresuntivoListadoDTO, bool>($"api/evento/{Id}/pacienteEvento", dto);
+        var respEvento = await Http.Put<EventoPacienteDiagPresuntivoListadoDTO, bool>(
+            $"api/evento/{Id}/pacienteEvento", dto);
+
         if (respEvento.Error)
         {
             Mensaje = respEvento.ObtenerError();
@@ -477,15 +484,30 @@ else
             var paciente = pacienteact.FirstOrDefault(p => p.Id == idEditado);
             if (paciente is null) continue;
 
-            // Ahora usamos PacienteDiagPresuntivoDTO directamente
-            var respPaciente = await Http.Put<PacienteDiagPresuntivoDTO, bool>($"api/paciente/{paciente.Id}", paciente);
+            var dtoActualizar = new PacienteActualizarDTO
+                {
+                    Id = paciente.Id,
+                    ObraSocial = paciente.ObraSocial,
+                    PersonaDTO = new PersonaDTO
+                    {
+                        Nombre = paciente.NombrePersona,
+                        DNI = paciente.DNIPersona,
+                        Direccion = paciente.DireccionPersona,
+                        Sexo = paciente.SexoPersona,
+                        Edad = paciente.EdadPersona
+                    },
+                    Eventos = new List<EventoPacienteDTO>() // vacío en actualización de datos personales
+                };
+
+            var respPaciente = await Http.Put<PacienteActualizarDTO, bool>(
+                $"api/paciente/{paciente.Id}", dtoActualizar);
+
             if (respPaciente.Error)
             {
                 Mensaje = $"Error actualizando paciente {paciente.NombrePersona}: {respPaciente.ObtenerError()}";
                 return;
             }
         }
-
 
         // 3) Borrar pacientes eliminados
         foreach (var idEliminado in pacientesEliminados)
@@ -498,7 +520,6 @@ else
             }
         }
 
-
         // 4) Navegar al listado si todo salió bien
         Nav.NavigateTo("/eventos", forceLoad: true);
 
@@ -507,6 +528,7 @@ else
         pacientesEditados.Clear();
         pacientesEliminados.Clear();
     }
+
 
 
 
@@ -531,13 +553,25 @@ else
     // ABRIR MODAL DE EDICIÓN
     private async Task AbrirModalEditarPaciente(int pacienteId)
     {
-        var resp = await Http.Get<PacienteDiagPresuntivoDTO>($"api/paciente/id/{pacienteId}");
+        var resp = await Http.Get<PacienteDTO>($"api/paciente/id/{pacienteId}");
         if (!resp.Error && resp.Respuesta is not null)
         {
-            pacienteEditar = resp.Respuesta;
+            var p = resp.Respuesta;
+            pacienteEditar = new PacienteDiagPresuntivoDTO
+            {
+               
+                NombrePersona = p.NombrePersona,
+                DNIPersona = p.PersonaDTO.DNI,
+                DireccionPersona = p.PersonaDTO.Direccion,
+                SexoPersona = p.PersonaDTO.Sexo,
+                EdadPersona = p.PersonaDTO.Edad,
+                ObraSocial = p.ObraSocial
+            };
+
             mostrarModalEditar = true;
         }
     }
+
 
     // GUARDAR PACIENTE EDITADO
     private void GuardarPacienteEditado()
@@ -558,13 +592,14 @@ else
         // Actualizar en memoria los datos del paciente
         pacienteact[idx] = pacienteEditar;
 
-        // Marcar como editado para persistir en BD después
+        // Marcar como editado para persistir en BD después (en GuardarCambios)
         if (!pacientesEditados.Contains(pacienteEditar.Id))
             pacientesEditados.Add(pacienteEditar.Id);
 
         mostrarModalEditar = false;
         Mensaje = $"Paciente {pacienteEditar.NombrePersona} editado en memoria.";
     }
+
 
     // CERRAR MODAL DE EDICIÓN
     private void CerrarModalEditar()
