@@ -1,4 +1,4 @@
-﻿@using G1Emergency2025.Shared.Enum;
+﻿@* @using G1Emergency2025.Shared.Enum;
 @page "/eventos/editar/{Id:int}"
 @inject IHttpServicio Http
 @inject NavigationManager Nav
@@ -187,15 +187,15 @@ else
                                     <InputText class="form-control" @bind-Value="nuevoPaciente.NombrePersona" />
                                     <ValidationMessage For="@(() => nuevoPaciente.NombrePersona)" />
                                 </div>
-                                <div class="form-group">
-                                    <label>Sexo</label>
-                                    <InputSelect class="form-control" @bind-Value="nuevoPaciente.SexoPersona">
-                                        <option value="Masculino">Masculino</option>
-                                        <option value="Femenino">Femenino</option>
-                                        <option value="Otro">Otro</option>
-                                    </InputSelect>
-                                    <ValidationMessage For="@(() => nuevoPaciente.SexoPersona)" />
-                                </div>
+                            <label>Sexo</label>
+                            <InputSelect class="form-control" @bind-Value="nuevoPaciente.SexoPersona">
+                                @foreach (Sexo s in Enum.GetValues(typeof(Sexo)))
+                                {
+                                    <option value="@s">@s</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => nuevoPaciente.SexoPersona)" />
+
                                 <div class="form-group">
                                     <label>DNI</label>
                                     <InputText class="form-control" @bind-Value="nuevoPaciente.DNIPersona" />
@@ -312,15 +312,14 @@ else
                                 <InputText class="form-control" @bind-Value="pacienteEditar.DireccionPersona" />
                                 <ValidationMessage For="@(() => pacienteEditar.DireccionPersona)" />
                             </div>
-                            <div class="form-group">
-                                <label>Sexo</label>
-                                <InputSelect class="form-control" @bind-Value="pacienteEditar.SexoPersona">
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Femenino">Femenino</option>
-                                    <option value="Otro">Otro</option>
-                                </InputSelect>
-                                <ValidationMessage For="@(() => pacienteEditar.SexoPersona)" />
-                            </div>
+                        <InputSelect @bind-Value="pacienteEditar.SexoPersona" class="form-control">
+                            @foreach (Sexo s in Enum.GetValues(typeof(Sexo)))
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="@(() => pacienteEditar.SexoPersona)" />
+
                             <div class="form-group">
                                 <label>Edad</label>
                                 <InputText class="form-control" @bind-Value="pacienteEditar.EdadPersona" />
@@ -486,7 +485,7 @@ else
             .Where(id => id > 0)
             .ToList();
 
-        var nuevosParaCrear = pacientesNuevos.Select(p => new PacienteCrearDTO).ToList();
+        var nuevosParaCrear = pacientesNuevos.Select(p => new PacienteCrearDTO
         {
             ObraSocial = p.ObraSocial,
             Persona = new PersonaCrearDTO
@@ -497,7 +496,7 @@ else
                 Sexo = p.SexoPersona,
                 Edad = p.EdadPersona
             }
-        }
+        }).ToList();
 
         var dto = new EventoActualizarDTO
         {
@@ -593,7 +592,7 @@ else
                 NombrePersona = p.PersonaDTO.Nombre,
                 DNIPersona = p.PersonaDTO.DNI,
                 DireccionPersona = p.PersonaDTO.Direccion,
-                SexoPersona = p.PersonaDTO.Sexo, // ✅ enum → string
+                SexoPersona = p.PersonaDTO.Sexo,
                 EdadPersona = p.PersonaDTO.Edad
             };
 
@@ -644,7 +643,7 @@ else
     }
 
     // SOLICITAR CONFIRMACIÓN DE BORRADO
-    // SOLICITAR CONFIRMACIÓN DE BORRADO
+  
     private void SolicitarConfirmacionPaciente(PacienteDiagPresuntivoDTO paciente)
     {
         pacienteAEliminar = paciente;
@@ -689,3 +688,4 @@ else
         Nav.NavigateTo("/eventos");
     }
 }
+ *@
