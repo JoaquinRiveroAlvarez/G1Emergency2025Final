@@ -1112,45 +1112,26 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 context.Eventos.Add(evento);
                 await context.SaveChangesAsync();
 
-                // 2. Crear Pacientes asociados al evento
                 if (dto.Pacientes != null)
                 {
                     foreach (var pacienteDto in dto.Pacientes)
                     {
-                        // Crear Persona
-                        Sexo sexoConvertido = Enum.Parse<Sexo>(pacienteDto.Persona.Sexo);
-                        var persona = new Persona
+                        var pacienteId = await pacienteRepo.CrearPacienteConPersona(new PacienteCrearDTO
                         {
-                            Nombre = pacienteDto.Persona.Nombre,
-                            DNI = pacienteDto.Persona.DNI,
-                            Legajo = pacienteDto.Persona.Legajo,
-                            Direccion = pacienteDto.Persona.Direccion,
-                            Sexo = sexoConvertido,
-                            Edad = pacienteDto.Persona.Edad
-                        };
-                        await context.Persona.AddAsync(persona);
-                        await context.SaveChangesAsync();
+                            Persona = pacienteDto.Persona,
+                            ObraSocial = pacienteDto.ObraSocial
+                        });
 
-                        // Crear Paciente
-                        var paciente = new Paciente
-                        {
-                            HistoriaClinica = await GenerarCodigoUnico(),
-                            ObraSocial = pacienteDto.ObraSocial,
-                            PersonaId = persona.Id
-                        };
-                        await context.Pacientes.AddAsync(paciente);
-                        await context.SaveChangesAsync();
-
-                        // Asociar Paciente al Evento
                         context.PacienteEventos.Add(new PacienteEvento
                         {
-                            PacienteId = paciente.Id,
+                            PacienteId = pacienteId,
                             EventoId = evento.Id,
-                            DiagnosticoPresuntivo = ""
+                            DiagnosticoPresuntivo = "Sin Diagnóstico"
                         });
                     }
                     await context.SaveChangesAsync();
                 }
+
                 if (dto.PacienteIds != null)
                     foreach (var pid in dto.PacienteIds)
                         await pacienteRepo.AsociarEvento(pid, evento.Id, "Sin Diagnostico");
