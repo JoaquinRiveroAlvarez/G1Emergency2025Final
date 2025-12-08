@@ -327,7 +327,6 @@ else
         var copia = new PacienteCrearDTO
         {
             ObraSocial = nuevoPaciente.ObraSocial,
-            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo,
             Persona = new PersonaCrearDTO
             {
                 Nombre = nuevoPaciente.Persona.Nombre,
@@ -335,6 +334,14 @@ else
                 Direccion = nuevoPaciente.Persona.Direccion,
                 Sexo = nuevoPaciente.Persona.Sexo,
                 Edad = nuevoPaciente.Persona.Edad
+            },
+            Eventos = new List<EventoPacienteDTO>
+            {
+                 new EventoPacienteDTO
+                 {
+                      EventoId = 0, 
+                      DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo
+                 }
             }
         };
 

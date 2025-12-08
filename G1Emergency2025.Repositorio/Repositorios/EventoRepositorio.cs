@@ -1089,7 +1089,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 throw;
             }
         }
-
         public async Task<int> InsertarEventoPaciente(EventoCrearDTO dto)
         {
             using var transaction = await context.Database.BeginTransactionAsync();
@@ -1112,26 +1111,50 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 context.Eventos.Add(evento);
                 await context.SaveChangesAsync();
 
+                // 2. Crear Pacientes asociados al evento
                 if (dto.Pacientes != null)
                 {
                     foreach (var pacienteDto in dto.Pacientes)
                     {
-                        var pacienteId = await pacienteRepo.CrearPacienteConPersona(new PacienteCrearDTO
+                        // Crear Persona
+                        Sexo sexoConvertido = Enum.Parse<Sexo>(pacienteDto.Persona.Sexo);
+                        var persona = new Persona
                         {
-                            Persona = pacienteDto.Persona,
-                            ObraSocial = pacienteDto.ObraSocial
-                        });
+                            Nombre = pacienteDto.Persona.Nombre,
+                            DNI = pacienteDto.Persona.DNI,
+                            Legajo = pacienteDto.Persona.Legajo,
+                            Direccion = pacienteDto.Persona.Direccion,
+                            Sexo = sexoConvertido,
+                            Edad = pacienteDto.Persona.Edad
+                        };
+                        await context.Persona.AddAsync(persona);
+                        await context.SaveChangesAsync();
 
+                        // Crear Paciente
+                        var paciente = new Paciente
+                        {
+                            HistoriaClinica = await GenerarCodigoUnico(),
+                            ObraSocial = pacienteDto.ObraSocial,
+                            PersonaId = persona.Id
+                        };
+                        await context.Pacientes.AddAsync(paciente);
+                        await context.SaveChangesAsync();
+
+                        // Asociar Paciente al Evento
+                        var diagPresuntivo = pacienteDto.Eventos.Count == 1
+                            ? pacienteDto.Eventos[0].DiagnosticoPresuntivo
+                            : "Sin Diagnostico";
                         context.PacienteEventos.Add(new PacienteEvento
                         {
-                            PacienteId = pacienteId,
+                            PacienteId = paciente.Id,
                             EventoId = evento.Id,
-                            DiagnosticoPresuntivo = "Sin Diagnóstico"
+                            DiagnosticoPresuntivo = diagPresuntivo
                         });
                     }
                     await context.SaveChangesAsync();
                 }
 
+                // 3. Asociar entidades existentes
                 if (dto.PacienteIds != null)
                     foreach (var pid in dto.PacienteIds)
                         await pacienteRepo.AsociarEvento(pid, evento.Id, "Sin Diagnostico");
@@ -1148,12 +1171,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     foreach (var mid in dto.MovilIds)
                         await movilRepo.AsociarEvento(mid, evento.Id);
 
-                // 4. Confirmar transacción
+                // 4. Confirmar transacción y registrar historial
                 var usuarioAleatorio = await usuarioRepo.ObtenerUsuarioAleatorio();
                 if (usuarioAleatorio != null)
                 {
                     await historialEventoRepo.RegistrarCreacionEvento(evento.Id, usuarioAleatorio.Id);
                 }
+
                 await transaction.CommitAsync();
                 return evento.Id;
             }
@@ -1163,6 +1187,80 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 throw;
             }
         }
+
+        //public async Task<int> InsertarEventoPaciente(EventoCrearDTO dto)
+        //{
+        //    using var transaction = await context.Database.BeginTransactionAsync();
+        //    try
+        //    {
+        //        // 1. Crear Evento
+        //        var evento = new Evento
+        //        {
+        //            Relato = dto.Relato,
+        //            Codigo = await GenerarCodigoUnicoAsync(),
+        //            colorEvento = dto.colorEvento,
+        //            Ubicacion = dto.Ubicacion,
+        //            Telefono = dto.Telefono,
+        //            FechaHora = dto.FechaHora,
+        //            CausaId = dto.CausaId,
+        //            TipoEstadoId = dto.TipoEstadoId,
+        //            EstadoRegistro = EnumEstadoRegistro.activo
+        //        };
+
+        //        context.Eventos.Add(evento);
+        //        await context.SaveChangesAsync();
+
+        //        if (dto.Pacientes != null)
+        //        {
+        //            foreach (var pacienteDto in dto.Pacientes)
+        //            {
+        //                var pacienteId = await pacienteRepo.CrearPacienteConPersona(new PacienteCrearDTO
+        //                {
+        //                    Persona = pacienteDto.Persona,
+        //                    ObraSocial = pacienteDto.ObraSocial
+        //                });
+
+        //                context.PacienteEventos.Add(new PacienteEvento
+        //                {
+        //                    PacienteId = pacienteId,
+        //                    EventoId = evento.Id,
+        //                    DiagnosticoPresuntivo = "Sin Diagnóstico"
+        //                });
+        //            }
+        //            await context.SaveChangesAsync();
+        //        }
+
+        //        if (dto.PacienteIds != null)
+        //            foreach (var pid in dto.PacienteIds)
+        //                await pacienteRepo.AsociarEvento(pid, evento.Id, "Sin Diagnostico");
+
+        //        if (dto.UsuarioIds != null)
+        //            foreach (var uid in dto.UsuarioIds)
+        //                await usuarioRepo.AsociarEvento(uid, evento.Id);
+
+        //        if (dto.LugarHechoIds != null)
+        //            foreach (var lid in dto.LugarHechoIds)
+        //                await lugarHechoRepo.AsociarEvento(lid, evento.Id);
+
+        //        if (dto.MovilIds != null)
+        //            foreach (var mid in dto.MovilIds)
+        //                await movilRepo.AsociarEvento(mid, evento.Id);
+
+        //        // 4. Confirmar transacción
+        //        var usuarioAleatorio = await usuarioRepo.ObtenerUsuarioAleatorio();
+        //        if (usuarioAleatorio != null)
+        //        {
+        //            await historialEventoRepo.RegistrarCreacionEvento(evento.Id, usuarioAleatorio.Id);
+        //        }
+        //        await transaction.CommitAsync();
+        //        return evento.Id;
+        //    }
+        //    catch
+        //    {
+        //        await transaction.RollbackAsync();
+        //        throw;
+        //    }
+        //}
 
         public async Task<bool> ActualizarEstadoEvento(int id, int estadoId)
         {
