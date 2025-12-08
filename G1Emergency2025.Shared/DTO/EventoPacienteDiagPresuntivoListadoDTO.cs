@@ -18,6 +18,7 @@ namespace G1Emergency2025.Shared.DTO
         public string Causa { get; set; } = string.Empty;
         public string TipoEstado { get; set; } = string.Empty;
         public int TipoEstadoId { get; set; }
+        public string Relato { get; set; } = string.Empty;
         public List<PacienteDiagPresuntivoDTO> Pacientes { get; set; } = new();
     }
 }
