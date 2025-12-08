@@ -649,25 +649,36 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     TipoEstado = e.TipoEstados!.Tipo,
                     TipoEstadoId = e.TipoEstadoId,
 
-                    // Pacientes NO se incluyen
-                    Pacientes = new List<PacienteDiagPresuntivoDTO>(),
+                    Pacientes = e.PacienteEventos
+                    .Select(pe => new PacienteDiagPresuntivoDTO
+                    {
+                        Id = pe.PacienteId,
+                        ObraSocial = pe.Pacientes!.ObraSocial,
+                        NombrePersona = pe.Pacientes.Persona!.Nombre,
+                        DNIPersona = pe.Pacientes.Persona.DNI,
+                        DireccionPersona = pe.Pacientes!.Persona.Direccion,
+                        SexoPersona = pe.Pacientes.Persona.Sexo,
+                        EdadPersona = pe.Pacientes.Persona.Edad,
+                        HistoriaClinica = pe.Pacientes!.HistoriaClinica,
+                        DiagnosticoPresuntivo = pe.DiagnosticoPresuntivo
+                    }).ToList(),
 
                     Usuarios = e.EventoUsuarios
-                        .Select(eu => new UsuarioResumenDTO
-                        {
-                            Id = eu.UsuarioId,
-                            Nombre = eu.Usuarios!.Nombre,
-                            Contrasena = eu.Usuarios.Contrasena
-                        }).ToList(),
+                    .Select(eu => new UsuarioResumenDTO
+                    {
+                        Id = eu.UsuarioId,
+                        Nombre = eu.Usuarios!.Nombre,
+                        Contrasena = eu.Usuarios.Contrasena
+                    }).ToList(),
 
                     Lugares = e.EventoLugarHechos
-                        .Select(elh => new LugarHechoResumenDTO
-                        {
-                            Id = elh.LugarHecho!.Id,
-                            Codigo = elh.LugarHecho.Codigo,
-                            Tipo = elh.LugarHecho.Tipo,
-                            Descripcion = elh.LugarHecho.Descripcion
-                        }).ToList(),
+                    .Select(elh => new LugarHechoResumenDTO
+                    {
+                        Id = elh.LugarHecho!.Id,
+                        Codigo = elh.LugarHecho.Codigo,
+                        Tipo = elh.LugarHecho.Tipo,
+                        Descripcion = elh.LugarHecho.Descripcion
+                    }).ToList(),
 
                     Moviles = e.EventoMovils.Select(em => new MovilResumenDTO
                     {

@@ -50,17 +50,9 @@ else
                     }
                 </ul>
             }
-
-            <!-- Usuarios -->
-            @if (evento.Usuarios.Any())
+            else
             {
-                <p><strong>Usuarios involucrados:</strong></p>
-                <ul class="list-group mb-2">
-                    @foreach (var u in evento.Usuarios)
-                    {
-                        <li class="list-group-item">@u.Nombre </li>
-                    }
-                </ul>
+                <p><strong>Móviles asignados:</strong> Ninguno</p>
             }
 
             <!-- Lugares -->
@@ -74,11 +66,15 @@ else
                     }
                 </ul>
             }
+            else
+            {
+                <p><strong>Lugares relacionados:</strong> Ninguno</p>
+            }
 
             <!-- Historial -->
             @if (evento.Historial.Any())
             {
-                <p><strong>Historial de modificaciones:</strong></p>
+                <p><strong>Historial:</strong></p>
                 <ul class="list-group mb-2">
                     @foreach (var h in evento.Historial)
                     {
@@ -89,6 +85,25 @@ else
                     }
                 </ul>
             }
+
+            @if (evento.Pacientes.Any())
+            {
+                <p><strong>Pacientes:</strong></p>
+                <ul class="list-group mb-2">
+                    @foreach (var p in evento.Pacientes)
+                    {
+                        <li class="list-group-item">
+                            <strong>@p.NombrePersona</strong> - DNI: @p.DNIPersona<br />
+                            <em>Diagnóstico Presuntivo:</em> @p.DiagnosticoPresuntivo
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p><strong>Pacientes:</strong> Ninguno</p>
+            }
+
         </div>
     </div>
 
