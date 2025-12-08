@@ -338,10 +338,13 @@ else
             }
         };
 
+        // Agregamos el paciente al evento
         evento.Pacientes.Add(copia);
+
         mostrarModalPaciente = false;
         Mensaje = $"Paciente {copia.Persona.Nombre} agregado.";
     }
+
 
     private void CerrarModal()
     {
