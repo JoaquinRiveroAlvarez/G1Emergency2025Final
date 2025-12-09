@@ -213,6 +213,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         {
             var rel = new PacienteEvento
             {
+                EstadoRegistro = EnumEstadoRegistro.activo,
                 PacienteId = pacienteId,
                 EventoId = eventoId,
                 DiagnosticoPresuntivo = string.Empty

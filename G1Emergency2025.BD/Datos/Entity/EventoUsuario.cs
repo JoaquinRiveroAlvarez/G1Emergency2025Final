@@ -9,6 +9,8 @@ namespace G1Emergency2025.BD.Datos.Entity
 {
     public class EventoUsuario
     {
+
+        public EnumEstadoRegistro EstadoRegistro { get; set; } = EnumEstadoRegistro.activo;
         public int EventoId { get; set; }
         public Evento? Eventos { get; set; }
 

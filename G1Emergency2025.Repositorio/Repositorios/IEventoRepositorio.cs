@@ -12,6 +12,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         Task<List<MovilListadoDTO>> SelectListaMovil();
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId);
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorNombrePaciente(string nombrePaciente);
+        Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorDNIPaciente(string dni);
         Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorHistoriaClinicaPaciente(string historiaClinica);
         Task<EventoPacienteDiagPresuntivoResumenDTO?> SelectEventoConPacientePorId(int id);
         Task<EventoDiagPresuntivoListadoDTO?> SelectPorCod(string cod);

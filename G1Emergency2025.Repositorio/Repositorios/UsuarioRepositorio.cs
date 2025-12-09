@@ -1,6 +1,7 @@
 ﻿using G1Emergency2025.BD.Datos;
 using G1Emergency2025.BD.Datos.Entity;
 using G1Emergency2025.Shared.DTO;
+using G1Emergency2025.Shared.Enum;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using System;
@@ -37,6 +38,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         {
             var rel = new EventoUsuario
             {
+                EstadoRegistro = EnumEstadoRegistro.activo,
                 UsuarioId = usuarioId,
                 EventoId = eventoId
             };

@@ -23,6 +23,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         {
             var rel = new EventoMovil
             {
+                EstadoRegistro = EnumEstadoRegistro.activo,
                 MovilId = movilId,
                 EventoId = eventoId
             };

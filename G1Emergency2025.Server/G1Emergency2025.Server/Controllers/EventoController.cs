@@ -119,6 +119,17 @@ namespace Proyecto2025.Server.Controllers
             return Ok(lista);
         }
 
+        [HttpGet("ListaEventoPorDNIPaciente/{dni}")]
+        public async Task<ActionResult<List<EventoDiagPresuntivoListadoDTO>>> GetListaEventoPorDNIPaciente(string dni)
+        {
+            var lista = await repositorio.SelectPorDNIPaciente(dni);
+            if (lista == null)
+            {
+                return NotFound($"No se encontro elementos en la lista con la historia clinica: {dni}.");
+            }
+            return Ok(lista);
+        }
+
         [HttpGet("EventoPorNombrePaciente")]
         public async Task<ActionResult<List<EventoDiagPresuntivoListadoDTO>>> GetEventoNombrePaciente([FromQuery] string nombre)
         {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using G1Emergency2025.Shared.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ namespace G1Emergency2025.BD.Datos.Entity
 {
     public class EventoMovil
     {
+        public EnumEstadoRegistro EstadoRegistro { get; set; } = EnumEstadoRegistro.activo;
         public int EventoId { get; set; }
         public Evento? Evento { get; set; }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using G1Emergency2025.Shared.Enum;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +11,7 @@ namespace G1Emergency2025.BD.Datos.Entity
 {
     public class PacienteEvento
     {
+        public EnumEstadoRegistro EstadoRegistro { get; set; } = EnumEstadoRegistro.activo;
         public int EventoId { get; set; }
         public Evento? Eventos { get; set; }
         public int PacienteId { get; set; }
