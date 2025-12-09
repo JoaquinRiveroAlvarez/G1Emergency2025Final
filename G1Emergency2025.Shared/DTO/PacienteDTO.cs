@@ -13,6 +13,7 @@ namespace G1Emergency2025.Shared.DTO
 
         [MaxLength(100, ErrorMessage = "La cantidad Maxima de caracteres es 50")]
         public string ObraSocial { get; set; } = "Ninguna";
+        public string HistoriaClinica { get; set; } = "Ninguna";
         public PersonaDTO PersonaDTO { get; set; } = null!;
         public int PersonaId { get; set; }
         public string NombrePersona { get; set; } = string.Empty;

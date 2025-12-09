@@ -27,7 +27,16 @@ namespace G1Emergency2025.Server.Controllers
 
             return Ok(paciente);
         }
+        [HttpGet("DNIPersona/{dni}")]
+        public async Task<ActionResult<PacienteDTO>> GetPacientePorDNIPersona(int dni)
+        {
+            var paciente = await repositorio.SelectPorDNIPersona(dni);
 
+            if (paciente == null)
+                return NotFound(new { mensaje = "Paciente no encontrado" });
+
+            return Ok(paciente);
+        }
         [HttpGet]
         public async Task<ActionResult<List<PacienteListadoDTO>>> GetList()
         {

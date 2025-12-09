@@ -170,7 +170,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorTipoEstado(int estadoEventoId)
         {
             var lista = await context.Eventos
-            .Where(e => e.TipoEstados!.Codigo == "01" && e.EstadoRegistro == EnumEstadoRegistro.activo)
+            .Where(e => e.EstadoRegistro == EnumEstadoRegistro.activo)
             .Include(e => e.PacienteEventos)
                 .ThenInclude(pe => pe.Pacientes)
             .Include(e => e.EventoLugarHechos)
@@ -243,7 +243,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorNombrePaciente(string nombrePaciente)
         {
             var lista = await context.Eventos
-            .Where(e => e.TipoEstados!.Codigo == "01" && e.EstadoRegistro == EnumEstadoRegistro.activo)
+            .Where(e => e.EstadoRegistro == EnumEstadoRegistro.activo)
             .Include(e => e.PacienteEventos)
                 .ThenInclude(pe => pe.Pacientes)
                 .ThenInclude(p => p!.Persona)
@@ -322,7 +322,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorHistoriaClinicaPaciente(string historiaClinica)
         {
             var lista = await context.Eventos
-            .Where(e => e.TipoEstados!.Codigo == "01" && e.EstadoRegistro == EnumEstadoRegistro.activo)
+            .Where(e => e.EstadoRegistro == EnumEstadoRegistro.activo)
             .Include(e => e.PacienteEventos)
                 .ThenInclude(pe => pe.Pacientes)
                 .ThenInclude(p => p.Persona)
@@ -397,7 +397,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
         public async Task<List<EventoDiagPresuntivoListadoDTO>> SelectPorDNIPaciente(string dni)
         {
             var lista = await context.Eventos
-            .Where(e => e.TipoEstados!.Codigo == "01" && e.EstadoRegistro == EnumEstadoRegistro.activo)
+            .Where(e => e.EstadoRegistro == EnumEstadoRegistro.activo)
             .Include(e => e.PacienteEventos)
                 .ThenInclude(pe => pe.Pacientes)
                 .ThenInclude(p => p!.Persona)

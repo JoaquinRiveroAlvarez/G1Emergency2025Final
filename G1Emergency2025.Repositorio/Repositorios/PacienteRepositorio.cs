@@ -51,7 +51,29 @@ namespace G1Emergency2025.Repositorio.Repositorios
 
             return paciente;
         }
+        public async Task<PacienteDTO?> SelectPorDNIPersona(int pacienteId)
+        {
+            var paciente = await context.Pacientes
+                .Include(p => p.Persona)
+                .Where(p => p.Id == pacienteId)
+                .Select(p => new PacienteDTO
+                {
+                    Id = p.Id,
+                    ObraSocial = p.ObraSocial,
+                    HistoriaClinica = p.HistoriaClinica,
+                    PersonaDTO = new PersonaDTO
+                    {
+                        Nombre = p.Persona!.Nombre,
+                        DNI = p.Persona.DNI,
+                        Direccion = p.Persona.Direccion,
+                        Sexo = p.Persona.Sexo,
+                        Edad = p.Persona.Edad
+                    }
+                })
+                .FirstOrDefaultAsync();
 
+            return paciente;
+        }
         public async Task<PacienteResumenDTO?> SelectByObraSocial(string cod)
         {
             return await context.Set<PacienteResumenDTO>().FirstOrDefaultAsync(x => x.ObraSocial == cod);

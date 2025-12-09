@@ -6,6 +6,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
     public interface IPacienteRepositorio : IRepositorio<Paciente>
     {
         Task<PacienteResumenDTO?> SelectPorId(int pacienteId);
+        Task<PacienteDTO?> SelectPorDNIPersona(int pacienteId);
         Task<PacienteResumenDTO?> SelectByObraSocial(string cod);
         Task<List<PacienteResumenDTO>> SelectListaPaciente();
         Task<List<PacienteResumenDTO>> SelectListaPacienteConPersonaYEvento();
