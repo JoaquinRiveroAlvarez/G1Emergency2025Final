@@ -23,8 +23,28 @@ else
 
             <div class="col-md-5">
                 <label class="form-label text-light">Ubicación</label>
-                <InputText class="form-control" @bind-Value="evento.Ubicacion" />
+                <div class="input-group">
+                    <InputText class="form-control" @bind-Value="evento.Ubicacion" @oninput="VerificarUbicacion" />
+                    <span class="input-group-text bg-transparent border-0">
+                        @if (!ubicacionCargada)
+                        {
+                            <span class="rounded-circle" style="width: 16px; height: 16px; background-color: red;" title="Ubicación no cargada"></span>
+                        }
+                        else
+                        {
+                            <span class="rounded-circle" style="width: 16px; height: 16px; background-color: green;" title="Evento geolocalizado"></span>
+                        }
+                    </span>
+                </div>
+                @if (ubicacionCargada)
+                {
+                    <span class="text-success small">Evento geolocalizado</span>
+                }
             </div>
+
+
+
+
 
             <div class="col-md-3">
                 <label class="form-label text-light">Fecha y Hora</label>
@@ -156,11 +176,12 @@ else
                                 <option value="Otro">Otro</option>
                             </InputSelect>
                         </div>
+
                         <div class="form-group">
                             <label>Edad</label>
                             <InputText class="form-control" @bind-Value="nuevoPaciente.Persona.Edad" />
                         </div>
-                       
+
                         <div class="form-group">
                             <label>Obra Social</label>
                             <InputSelect class="form-control" @bind-Value="nuevoPaciente.ObraSocial">
@@ -216,15 +237,15 @@ else
                                 <option value="PAMI">PAMI</option>
                                 <option value="APROSS">APROSS</option>
                                 <option value="Otro">Otro</option>
-
                             </InputSelect>
                             <ValidationMessage For="@(() => nuevoPaciente.ObraSocial)" />
                         </div>
+
                         <div class="form-group">
                             <label>Diagnóstico Presuntivo</label>
                             <InputText class="form-control" @bind-Value="nuevoPaciente.DiagnosticoPresuntivo" />
                         </div>
-                        <br />
+                       
                         
 
                         <div class="mt-4">
@@ -271,6 +292,8 @@ else
     string movilAsignado = "";
     bool mostrarModalMoviles = false;
     bool mostrarModalPaciente = false;
+    bool ubicacionCargada = false;
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -303,7 +326,7 @@ else
         eventoGuardado = true;
         Mensaje = "Evento guardado correctamente.";
 
-        Nav.NavigateTo("/eventos"); // ← Redirección automática
+        Nav.NavigateTo("/eventos"); 
     }
 
     
@@ -327,7 +350,7 @@ else
         var copia = new PacienteCrearDTO
         {
             ObraSocial = nuevoPaciente.ObraSocial,
-            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo, // 👈 se conserva
+            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo,
             Persona = new PersonaCrearDTO
             {
                 Nombre = nuevoPaciente.Persona.Nombre,
@@ -344,7 +367,11 @@ else
         Mensaje = $"Paciente {copia.Persona.Nombre} agregado con diagnóstico: {copia.DiagnosticoPresuntivo}.";
     }
 
-
+    private void VerificarUbicacion(ChangeEventArgs e)
+    {
+        var valor = e.Value?.ToString();
+        ubicacionCargada = !string.IsNullOrWhiteSpace(valor);
+    }
 
 
     private void CerrarModal()
