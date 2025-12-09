@@ -214,13 +214,19 @@ namespace Proyecto2025.Server.Controllers
         {
             try
             {
-                return Ok(true); 
+                var actualizado = await repositorio.ActualizarEventoPaciente(id, dto);
+
+                if (!actualizado)
+                    return NotFound($"No se encontró el evento con Id {id}");
+
+                return Ok(true);
             }
             catch (Exception ex)
             {
-                return BadRequest(false);
+                return StatusCode(500, new { mensaje = "Error al actualizar el evento", detalle = ex.Message });
             }
         }
+
 
 
         [HttpPut("{id}/AsignarMovilesEvento")]

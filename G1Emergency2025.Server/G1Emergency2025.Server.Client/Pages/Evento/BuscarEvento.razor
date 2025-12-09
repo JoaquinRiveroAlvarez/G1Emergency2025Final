@@ -1,66 +1,51 @@
-﻿@page "/eventos"
-@using System.Text.Json
+﻿@page "/eventos/buscar"
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
-<h3 class="text-light">Lista de Eventos</h3>
-<div class="d-flex justify-content-between align-items-center mb-3">
-  
-    <div>
-        <a class="btn btn-danger me-2"
-           href="/eventos/crear"
-           title="Nuevo Evento">
-            +
-        </a>
+<h3 class="text-light">Buscar Eventos por Fecha</h3>
 
-        <button class="btn btn-outline-light"
-                @onclick="AlternarVista">
-            @(mostrarTodos
-                        ? "Ver eventos de las últimas 24 hs"
-                        : "Ver historial")
-        </button>
-    </div>
-
-    
-    <div class="d-flex align-items-center gap-2">
-        <NavLink href="/geolocalizacion" title="Geolocalización" class="text-primary fs-4">
-            <i class="fas fa-earth-americas"></i>
-        </NavLink>
-
-        <NavLink href="/pacientes/buscar" title="Buscar Pacientes" class="btn btn-info btn-sm">
-            <i class="fas fa-user"></i> Buscar Pacientes
-        </NavLink>
-
-        <NavLink href="/eventos/buscar" title="Buscar Evento por Fecha" class="btn btn-info btn-sm">
-            <i class="fas fa-calendar-day"></i> Buscar Evento
-        </NavLink>
-
+<div class="card bg-dark text-light mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Filtros de búsqueda</h5>
+        <div class="row g-2">
+            <div class="col-md-2">
+                <InputNumber @bind-Value="anioFiltro" class="form-control" placeholder="Año" />
+            </div>
+            <div class="col-md-2">
+                <InputNumber @bind-Value="mesFiltro" class="form-control" placeholder="Mes" />
+            </div>
+            <div class="col-md-2">
+                <InputNumber @bind-Value="diaFiltro" class="form-control" placeholder="Día" />
+            </div>
+            <div class="col-md-2">
+                <InputNumber @bind-Value="horaFiltro" class="form-control" placeholder="Hora" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-info w-100" @onclick="BuscarPorFecha">Buscar</button>
+            </div>
+        </div>
     </div>
 </div>
 
 @if (eventos == null)
 {
-    <div class="alert alert-secondary">Buscando...</div>
+    <div class="alert alert-secondary">Esperando búsqueda...</div>
 }
 else if (eventos.Count == 0)
 {
-    <div class="alert alert-warning">No hay Eventos cargados en esta lista</div>
+    <div class="alert alert-warning">No se encontraron eventos con esos filtros</div>
 }
 else
 {
     <div class="table-responsive">
         <table class="table table-sm table-bordered text-dark tabla-compacta">
-
-
             <thead class="table-dark">
                 <tr>
-                    
-                    
                     <th>Ubicación</th>
                     <th>Teléfono</th>
                     <th>Fecha</th>
                     <th>Paciente</th>
-                    <th>Estado</th>
+                    <th style="min-width: 160px;">Estado</th>
                     <th></th>
                 </tr>
             </thead>
@@ -82,7 +67,6 @@ else
                             @evento.FechaHora.ToString("dd/MM/yyyy") <br />
                             <small class="text-light">@evento.FechaHora.ToString("HH:mm:ss")</small>
                         </td>
-
                         <td class="text-center align-middle p-0">
                             @if (evento.Pacientes != null && evento.Pacientes.Count > 0)
                             {
@@ -97,14 +81,15 @@ else
                                 <span class="text-dark">–</span>
                             }
                         </td>
-                        <td class="estado-col text-center align-middle">
+                        <td class="align-middle">
                             @if (evento.TipoEstado == "Finalizado")
                             {
                                 <span class="text-muted">@evento.TipoEstado</span>
                             }
                             else
                             {
-                                <select class="form-select form-select-sm text-dark"
+                                <select class="form-select form-select-sm bg-light text-dark"
+                                        style="font-size: 0.85rem;"
                                         @onchange="e => CambiarEstado(evento.Id, int.Parse(e.Value!.ToString()))">
                                     @foreach (var estado in estadosDisponibles)
                                     {
@@ -115,57 +100,23 @@ else
                                 </select>
                             }
                         </td>
-
-
-
-
                         <td class="text-center" style="white-space:nowrap;">
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-outline-light" title="Ver evento" @onclick="() => VerEventoPorCodigo(evento.Codigo)">📄</button>
                                 <button class="btn btn-sm btn-outline-light me-1" title="Editar" @onclick="() => Editar(evento.Id)">✏</button>
-                                <button class="btn btn-sm btn-outline-light me-1" title="Borrar" @onclick="() => SolicitarConfirmacion(evento)">🗑</button>
-                                <button class="btn btn-sm btn-outline-light me-1" title="Asignar Móvil" @onclick="() => AsignarMovil(evento.Id)">
-                                    🚑
-                                </button>
+                                <button class="btn btn-sm btn-outline-light me-1" title="Asignar Móvil" @onclick="() => AsignarMovil(evento.Id)">🚑</button>
                             </div>
                         </td>
-
                     </tr>
                 }
             </tbody>
-
         </table>
     </div>
 }
-@if (mostrarModalConfirmacion)
-{
-    <div class="modal show d-block" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">Confirmar eliminación</h5>
-                    <button type="button" class="btn-close" @onclick="CancelarConfirmacion"></button>
-                </div>
-                <div class="modal-body">
-                  
 
-                        <p>
-                            ¿Estás seguro que querés eliminar el evento con código
-                            <strong>@(eventoAEliminar?.Codigo ?? "…")</strong>?
-                        </p>
-                  
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelarConfirmacion">Cancelar</button>
-                    <button class="btn btn-danger" @onclick="ConfirmarBorrado">Eliminar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-
-
-}
+<div class="mt-4">
+    <button class="btn btn-secondary" @onclick="Volver">← Volver a lista</button>
+</div>
 
 @if (!string.IsNullOrEmpty(Mensaje))
 {
@@ -173,13 +124,14 @@ else
 }
 
 @code {
-    List<EventoDiagPresuntivoListadoDTO>? eventos;
-    string Mensaje = "";
-    bool mostrarTodos = false;
-    EventoDiagPresuntivoListadoDTO? eventoAEliminar;
-    bool mostrarModalConfirmacion = false;
+    int? anioFiltro;
+    int? mesFiltro;
+    int? diaFiltro;
+    int? horaFiltro;
 
+    List<EventoDiagPresuntivoListadoDTO>? eventos;
     List<TipoEstadoListadoDTO> estadosDisponibles = new();
+    string Mensaje = "";
 
     protected override async Task OnInitializedAsync()
     {
@@ -190,48 +142,32 @@ else
             {
                 estadosDisponibles = respEstados.Respuesta ?? new();
             }
-
-            await LeerEventos();
         }
         catch (Exception ex)
         {
-            Mensaje = $"Error durante la inicialización: {ex.Message}";
-            Console.WriteLine($"[InitError] {ex}");
+            Mensaje = $"Error al cargar estados: {ex.Message}";
         }
     }
 
-    private async Task LeerEventos()
+    private async Task BuscarPorFecha()
     {
         try
         {
-            string endpoint = mostrarTodos
-               ? "api/evento/ListaEventoCompleto"
-               : "api/evento/ListaEventoRecienteCompleto";
-
+            string endpoint = $"api/evento/buscarPorFecha?anio={anioFiltro}&mes={mesFiltro}&dia={diaFiltro}&hora={horaFiltro}";
             var resp = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>(endpoint);
 
             if (!resp.Error)
             {
                 eventos = resp.Respuesta ?? new List<EventoDiagPresuntivoListadoDTO>();
-
-                eventos = eventos
-                    .Where(e => e.TipoEstado != "Finalizado")
-                    .OrderBy(e =>
-                        e.colorEvento == ColorEvento.Rojo ? 0 :
-                        e.colorEvento == ColorEvento.Amarillo ? 1 :
-                        e.colorEvento == ColorEvento.Verde ? 2 :
-                        3)
-                    .ToList();
             }
             else
             {
-                Mensaje = $"Error al obtener eventos: {resp.ObtenerError()}";
+                Mensaje = $"Error al buscar eventos: {resp.ObtenerError()}";
             }
         }
         catch (Exception ex)
         {
             Mensaje = $"❌ Error: {ex.Message}";
-            Console.WriteLine($"[Error] {ex}");
         }
     }
 
@@ -254,64 +190,9 @@ else
         }
     }
 
-    private async Task AlternarVista()
-    {
-        mostrarTodos = !mostrarTodos;
-        await LeerEventos();
-    }
-
-    private async Task Borrar(EventoDiagPresuntivoListadoDTO evento)
-    {
-        var resp = await Http.Delete($"api/evento/{evento.Id}");
-
-        if (resp.Error)
-        {
-            Mensaje = resp.ObtenerError();
-        }
-
-        await LeerEventos();
-    }
-
-    private void SolicitarConfirmacion(EventoDiagPresuntivoListadoDTO evento)
-    {
-        eventoAEliminar = evento;
-        mostrarModalConfirmacion = true;
-        StateHasChanged();
-        Console.WriteLine($"Evento seleccionado: {evento.Codigo}");
-    }
-
-    private void CancelarConfirmacion()
-    {
-        eventoAEliminar = null;
-        mostrarModalConfirmacion = false;
-    }
-
-    private async Task ConfirmarBorrado()
-    {
-        if (eventoAEliminar is not null)
-        {
-            var resp = await Http.Delete($"api/evento/{eventoAEliminar.Id}");
-
-            if (resp.Error)
-            {
-                Mensaje = resp.ObtenerError();
-            }
-
-            await LeerEventos();
-            eventoAEliminar = null;
-        }
-
-        mostrarModalConfirmacion = false;
-    }
-
     private void Editar(int id)
     {
         Nav.NavigateTo($"/eventos/editar/{id}");
-    }
-
-    private void IrAGeolocalizacion()
-    {
-        Nav.NavigateTo("/geolocalizacion");
     }
 
     private void AsignarMovil(int eventoId)
@@ -323,4 +204,10 @@ else
     {
         Nav.NavigateTo($"/evento/codigo/{codigo}");
     }
+
+    private void Volver()
+    {
+        Nav.NavigateTo("/eventos");
+    }
 }
+

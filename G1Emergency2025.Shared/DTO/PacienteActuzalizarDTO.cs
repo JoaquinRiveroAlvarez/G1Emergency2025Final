@@ -8,10 +8,8 @@ namespace G1Emergency2025.Shared.DTO
 {
     public class PacienteActualizarDTO
     {
-        //ID AGREGADO POR ZOE PARA PROBAR LO DE EDITAR EVENTO
         public int Id { get; set; }
-        //--------------------------------------------
-
+        public string HistoriaClinica { get; set; } = "";
         public string ObraSocial { get; set; } = "Ninguna";
         public PersonaDTO PersonaDTO { get; set; } = null!; 
         public List<EventoPacienteDTO> Eventos { get; set; } = new();

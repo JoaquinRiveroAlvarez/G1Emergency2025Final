@@ -236,6 +236,12 @@ namespace G1Emergency2025.Repositorio.Repositorios
             // 2. Actualizar datos del paciente
             paciente.ObraSocial = dto.ObraSocial!;
 
+            // Si el DTO trae historia clínica la usamos, si no, mantenemos la existente
+            paciente.HistoriaClinica = string.IsNullOrWhiteSpace(dto.HistoriaClinica)
+                ? paciente.HistoriaClinica
+                : dto.HistoriaClinica;
+
+
             // 3. Actualizar datos de persona
             if (paciente.Persona != null)
             {
@@ -244,6 +250,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 paciente.Persona.Direccion = dto.PersonaDTO.Direccion;
                 paciente.Persona.Sexo = dto.PersonaDTO.Sexo;
                 paciente.Persona.Edad = dto.PersonaDTO.Edad;
+
             }
 
             // 4. Actualizar relaciones N:M

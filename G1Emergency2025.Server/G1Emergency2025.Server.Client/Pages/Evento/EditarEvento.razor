@@ -1,5 +1,4 @@
-﻿@using G1Emergency2025.Shared.Enum;
-@page "/eventos/editar/{Id:int}"
+﻿@page "/eventos/editar/{Id:int}"
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
@@ -75,7 +74,6 @@ else
                 <ValidationMessage For="@(() => evento.colorEvento)" />
             </div>
 
-            
             <div class="col-md-4">
                 <label class="form-label text-light">Estado</label>
                 <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
@@ -87,276 +85,48 @@ else
                 </InputSelect>
                 <ValidationMessage For="@(() => evento.TipoEstadoId)" />
             </div>
+
+            <div class="col-md-4">
+                <label class="form-label text-light">Causa</label>
+                <InputSelect class="form-control" @bind-Value="evento.CausaId">
+                    <option value="0">-- Seleccionar causa --</option>
+                    @foreach (var c in causas)
+                    {
+                        <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => evento.CausaId)" />
+            </div>
         </div>
-
-        <button type="button" class="btn btn-info" @onclick="AbrirModalPaciente">
-            + Agregar paciente
-        </button>
-
 
         <div class="mt-4 d-flex flex-wrap gap-2">
             <button class="btn btn-success" type="submit">Guardar</button>
-           <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
+            <button class="btn btn-secondary" type="button" @onclick="Volver">Cancelar</button>
         </div>
     </EditForm>
 
-    @if (pacienteact.Any() || pacientesNuevos.Any())
-    {
-        <h5 class="text-light mt-3">Pacientes asociados</h5>
-        <ul class="list-group">
-            @foreach (var p in pacienteact)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    @p.NombrePersona - @p.DNIPersona
-                    <div>
-                        <button class="btn btn-sm btn-info me-2"
-                                @onclick="async () => await AbrirModalEditarPaciente(p.Id)">
-                            ✏
-                        </button>
-
-                        <button class="btn btn-sm btn-danger"
-                                @onclick="() => SolicitarConfirmacionPaciente(p)">
-                            🗑
-                        </button>
-                    </div>
-                </li>
-            }
-
-            @foreach (var p in pacientesNuevos)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center bg-warning">
-                    @p.NombrePersona - @p.DNIPersona
-                    <div>
-                        <span class="text-muted">Nuevo (se guardará al confirmar)</span>
-                    </div>
-                </li>
-            }
-        </ul>
-    }
-    
-@if (mostrarModalConfirmacion)
-{
-    <div class="modal show d-block" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-warning text-dark">
-                    <h5 class="modal-title">Confirmar cambios</h5>
-                    <button type="button" class="btn-close" @onclick="CancelarConfirmacion"></button>
-                </div>
-                <div class="modal-body">
-                    <p>¿Estás seguro que querés realizar este cambio?</p>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" @onclick="CancelarConfirmacion">Cancelar</button>
-                    <button class="btn btn-primary" @onclick="GuardarCambios">Guardar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="modal-backdrop fade show"></div>
-}
-
-                      
-    @if (mostrarModalPaciente)
-    {
-            <div class="modal show d-block" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title">Agregar nuevo Paciente</h5>
-                            <button type="button" class="btn-close" @onclick="CerrarModal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <EditForm Model="@nuevoPaciente" OnValidSubmit="GuardarPaciente">
-                                <DataAnnotationsValidator />
-                                <ValidationSummary />
-
-                                <div class="form-group">
-                                    <label>Nombre</label>
-                                    <InputText class="form-control" @bind-Value="nuevoPaciente.NombrePersona" />
-                                    <ValidationMessage For="@(() => nuevoPaciente.NombrePersona)" />
-                                </div>
-                            <label>Sexo</label>
-                            <InputSelect class="form-control" @bind-Value="nuevoPaciente.SexoPersona">
-                                @foreach (Sexo s in Enum.GetValues(typeof(Sexo)))
-                                {
-                                    <option value="@s">@s</option>
-                                }
-                            </InputSelect>
-                            <ValidationMessage For="@(() => nuevoPaciente.SexoPersona)" />
-
-                                <div class="form-group">
-                                    <label>DNI</label>
-                                    <InputText class="form-control" @bind-Value="nuevoPaciente.DNIPersona" />
-                                    <ValidationMessage For="@(() => nuevoPaciente.DNIPersona)" />
-                                </div>
-                                <div class="form-group">
-                                    <label>Dirección</label>
-                                    <InputText class="form-control" @bind-Value="nuevoPaciente.DireccionPersona" />
-                                    <ValidationMessage For="@(() => nuevoPaciente.DireccionPersona)" />
-                                </div>
-
-                                <div class="form-group">
-                                    <label>Edad</label>
-                                    <InputText class="form-control" @bind-Value="nuevoPaciente.EdadPersona" />
-                                    <ValidationMessage For="@(() => nuevoPaciente.EdadPersona)" />
-                                </div>
-                                <div class="form-group">
-                                    <label>Obra Social</label>
-                                    <InputSelect class="form-control" @bind-Value="nuevoPaciente.ObraSocial">
-                                    <option value="Ninguna">Ninguna</option>
-                                    <option value="AMCI">AMCI</option>
-                                    <option value="AMMA">AMMA</option>
-                                    <option value="AMMA Mediterránea">AMMA Mediterránea</option>
-                                    <option value="AMEC">AMEC</option>
-                                    <option value="AMEP">AMEP</option>
-                                    <option value="AMUR">AMUR</option>
-                                    <option value="AMSUR">AMSUR</option>
-                                    <option value="ASIMRA Mutual">ASIMRA Mutual</option>
-                                    <option value="Asociación Mutual CELESOL">Asociación Mutual CELESOL</option>
-                                    <option value="Asociación Mutual del Docente de la Provincia de Córdoba">Asociación Mutual del Docente de la Provincia de Córdoba</option>
-                                    <option value="Asociación Mutual de Docentes Privados (SADOP)">Asociación Mutual de Docentes Privados (SADOP)</option>
-                                    <option value="Asociación Mutualista de Jubilados y Pensionados de Córdoba">Asociación Mutualista de Jubilados y Pensionados de Córdoba</option>
-                                    <option value="Bancaria Federal Mutual">Bancaria Federal Mutual</option>
-                                    <option value="CEC Mutual">CEC Mutual</option>
-                                    <option value="FAMSA">FAMSA</option>
-                                    <option value="FEMUCOR">FEMUCOR</option>
-                                    <option value="Jerárquicos Salud (Mutual Jerárquicos)">Jerárquicos Salud (Mutual Jerárquicos)</option>
-                                    <option value="Mutual 9 de Julio">Mutual 9 de Julio</option>
-                                    <option value="Mutual ASIMRA">Mutual ASIMRA</option>
-                                    <option value="Mutual Bancaria Federal">Mutual Bancaria Federal</option>
-                                    <option value="Mutual Bancor">Mutual Bancor</option>
-                                    <option value="Mutual Círculo de Suboficiales">Mutual Círculo de Suboficiales</option>
-                                    <option value="Mutual Club Atlético Belgrano">Mutual Club Atlético Belgrano</option>
-                                    <option value="Mutual Club Atlético Talleres">Mutual Club Atlético Talleres</option>
-                                    <option value="Mutual Construcción">Mutual Construcción</option>
-                                    <option value="Mutual del Magisterio">Mutual del Magisterio</option>
-                                    <option value="Mutual del Personal de Obras Sanitarias">Mutual del Personal de Obras Sanitarias</option>
-                                    <option value="Mutual del Personal de Telecomunicaciones">Mutual del Personal de Telecomunicaciones</option>
-                                    <option value="Mutual del Docente Universitario">Mutual del Docente Universitario</option>
-                                    <option value="Mutual del Transporte Automotor">Mutual del Transporte Automotor</option>
-                                    <option value="Mutual de Empleados Municipales">Mutual de Empleados Municipales</option>
-                                    <option value="Mutual de la Policía de Córdoba">Mutual de la Policía de Córdoba</option>
-                                    <option value="Mutual de la Salud Federal">Mutual de la Salud Federal</option>
-                                    <option value="Mutual de Vigiladores">Mutual de Vigiladores</option>
-                                    <option value="Mutual Ferroviaria">Mutual Ferroviaria</option>
-                                    <option value="Mutual Gráficos">Mutual Gráficos</option>
-                                    <option value="Mutual Libertad">Mutual Libertad</option>
-                                    <option value="Mutual Luz y Fuerza de Córdoba">Mutual Luz y Fuerza de Córdoba</option>
-                                    <option value="Mutual Metalúrgica">Mutual Metalúrgica</option>
-                                    <option value="Mutual Municipal">Mutual Municipal</option>
-                                    <option value="Mutual OMEGA">Mutual OMEGA</option>
-                                    <option value="Mutual PYME">Mutual PYME</option>
-                                    <option value="Mutual Regional Argentina">Mutual Regional Argentina</option>
-                                    <option value="Mutual SANCOR">Mutual SANCOR</option>
-                                    <option value="Mutual San Cristóbal">Mutual San Cristóbal</option>
-                                    <option value="Mutual SER">Mutual SER</option>
-                                    <option value="Mutual SOLIDAR">Mutual SOLIDAR</option>
-                                    <option value="Mutual Unión y Progreso">Mutual Unión y Progreso</option>
-                                    <option value="PAMI">PAMI</option>
-                                    <option value="APROSS">APROSS</option>
-                                    <option value="Otro">Otro</option>
-                                    </InputSelect>
-                                    <ValidationMessage For="@(() => nuevoPaciente.ObraSocial)" />
-                                </div>
-                                <br />
-
-                                <button class="btn btn-success" type="submit">Guardar</button>
-                                <button class="btn btn-secondary" type="button" @onclick="CerrarModal">Cancelar</button>
-                            </EditForm>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-backdrop fade show"></div>
-    }
-}
-
-    @if (mostrarModalEditar)
+    @if (mostrarModalConfirmacion)
     {
         <div class="modal show d-block" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-warning text-dark">
-                        <h5 class="modal-title">Editar Paciente</h5>
-                        <button type="button" class="btn-close" @onclick="CerrarModalEditar"></button>
+                        <h5 class="modal-title">Confirmar cambios</h5>
+                        <button type="button" class="btn-close" @onclick="CancelarConfirmacion"></button>
                     </div>
                     <div class="modal-body">
-                        <EditForm Model="@pacienteEditar" OnValidSubmit="GuardarPacienteEditado">
-                            <DataAnnotationsValidator />
-                            <ValidationSummary />
-
-                            <div class="form-group">
-                                <label>Nombre</label>
-                                <InputText class="form-control" @bind-Value="pacienteEditar.NombrePersona" />
-                                <ValidationMessage For="@(() => pacienteEditar.NombrePersona)" />
-                            </div>
-                            <div class="form-group">
-                                <label>DNI</label>
-                                <InputText class="form-control" @bind-Value="pacienteEditar.DNIPersona" />
-                                <ValidationMessage For="@(() => pacienteEditar.DNIPersona)" />
-                            </div>
-                            <div class="form-group">
-                                <label>Dirección</label>
-                                <InputText class="form-control" @bind-Value="pacienteEditar.DireccionPersona" />
-                                <ValidationMessage For="@(() => pacienteEditar.DireccionPersona)" />
-                            </div>
-                        <InputSelect @bind-Value="pacienteEditar.SexoPersona" class="form-control">
-                            @foreach (Sexo s in Enum.GetValues(typeof(Sexo)))
-                            {
-                                <option value="@s">@s</option>
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="@(() => pacienteEditar.SexoPersona)" />
-
-                            <div class="form-group">
-                                <label>Edad</label>
-                                <InputText class="form-control" @bind-Value="pacienteEditar.EdadPersona" />
-                                <ValidationMessage For="@(() => pacienteEditar.EdadPersona)" />
-                            </div>
-                            <div class="form-group">
-                                <label>Obra Social</label>
-                                <InputSelect class="form-control" @bind-Value="pacienteEditar.ObraSocial" />
-                                <ValidationMessage For="@(() => pacienteEditar.ObraSocial)" />
-                            </div>
-
-                            <button class="btn btn-success mt-3" type="submit">Guardar cambios</button>
-                            <button class="btn btn-secondary mt-3" type="button" @onclick="CerrarModalEditar">Cancelar</button>
-                        </EditForm>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-backdrop fade show"></div>
-    }
-
-
-    @if (mostrarModalConfirmacionPaciente)
-    {
-        <div class="modal show d-block" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">Confirmar borrado</h5>
-                        <button type="button" class="btn-close" @onclick="CancelarConfirmacionPaciente"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>
-                            ¿Seguro que querés eliminar al paciente
-                            <strong>@pacienteAEliminar?.NombrePersona</strong>
-                            con DNI <strong>@pacienteAEliminar?.DNIPersona</strong>?
-                        </p>
+                        <p>¿Estás seguro que querés realizar este cambio?</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" @onclick="CancelarConfirmacionPaciente">Cancelar</button>
-                        <button class="btn btn-danger" @onclick="ConfirmarBorradoPaciente">Eliminar</button>
+                        <button class="btn btn-secondary" @onclick="CancelarConfirmacion">Cancelar</button>
+                        <button class="btn btn-primary" @onclick="GuardarCambios">Guardar</button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="modal-backdrop fade show"></div>
     }
-
+}
 
 <p>@Mensaje</p>
 
@@ -364,37 +134,11 @@ else
     [Parameter] public string vista { get; set; } = "recientes";
     [Parameter] public int Id { get; set; }
     private EventoActualizarDTO? evento;
-    private List<CausaDTO> causas = new();
     private List<TipoEstadoDTO> tipoestados = new();
+    private List<CausaDTO> causas = new();
     private string Mensaje = "";
     private bool cargando = true;
     private bool mostrarModalConfirmacion = false;
-
-    // Pacientes asociados al evento
-    private List<PacienteDiagPresuntivoDTO> pacienteact = new();
-
-    // Paciente en edición
-    private PacienteDiagPresuntivoDTO pacienteEditar = new();
-
-    // Paciente a eliminar
-    private PacienteDiagPresuntivoDTO? pacienteAEliminar;
-
-    // Pacientes nuevos en memoria
-    private List<PacienteDiagPresuntivoDTO> pacientesNuevos = new();
-
-    // Ids de pacientes editados
-    private List<int> pacientesEditados = new();
-
-    // Ids de pacientes eliminados
-    private List<int> pacientesEliminados = new();
-
-    // Paciente que se está creando en el modal
-    private PacienteDiagPresuntivoDTO nuevoPaciente = new();
-    
-    private bool mostrarModalPaciente = false;
-    private bool mostrarModalEditar = false;
-    private bool mostrarModalConfirmacionPaciente = false;
-
 
     protected override async Task OnInitializedAsync()
     {
@@ -402,29 +146,13 @@ else
         {
             var respTipoEstados = await Http.Get<List<TipoEstadoDTO>>("api/tipoestado");
             if (!respTipoEstados.Error) tipoestados = respTipoEstados.Respuesta!;
-
             var respCausas = await Http.Get<List<CausaDTO>>("api/causa");
             if (!respCausas.Error) causas = respCausas.Respuesta!;
 
-            // Cargar evento completo con pacientes
-            var respEvento = await Http.Get<EventoDiagPresuntivoListadoDTO>($"api/evento/id/{Id}");
+            var respEvento = await Http.Get<EventoActualizarDTO>($"api/evento/id/{Id}");
             if (!respEvento.Error && respEvento.Respuesta is not null)
             {
-                var e = respEvento.Respuesta!;
-                evento = new EventoActualizarDTO
-                {
-                    Id = e.Id,
-                    Codigo = e.Codigo,
-                    Relato = e.Relato,
-                    colorEvento = e.colorEvento,
-                    Ubicacion = e.Ubicacion,
-                    Telefono = e.Telefono,
-                    FechaHora = e.FechaHora,
-                    CausaId = e.CausaId,
-                    TipoEstadoId = e.TipoEstadoId
-                };
-
-                pacienteact = e.Pacientes?.ToList() ?? new List<PacienteDiagPresuntivoDTO>();
+                evento = respEvento.Respuesta!;
             }
             else
             {
@@ -437,23 +165,6 @@ else
         }
 
         cargando = false;
-    }
-
-
-
-
-
-    // Abrir modal para agregar paciente nuevo
-    private void AbrirModalPaciente()
-    {
-        nuevoPaciente = new PacienteDiagPresuntivoDTO();
-        mostrarModalPaciente = true;
-    }
-
-
-    private void CerrarModal()
-    {
-        mostrarModalPaciente = false;
     }
 
     private void MostrarConfirmacion()
@@ -470,33 +181,6 @@ else
     {
         mostrarModalConfirmacion = false;
 
-        var idsAsociados = pacienteact
-            .Where(p => !pacientesEliminados.Contains(p.Id))
-            .Select(p => p.Id)
-            .Where(id => id > 0)
-            .ToList();
-
-        var nuevosParaCrear = pacientesNuevos.Select(p => new PacienteCrearDTO
-        {
-            ObraSocial = p.ObraSocial,
-            Persona = new PersonaCrearDTO
-            {
-                Nombre = p.NombrePersona,
-                DNI = p.DNIPersona,
-                Direccion = p.DireccionPersona,
-                Sexo = p.SexoPersona,
-                Edad = p.EdadPersona
-            },
-                Eventos = new List<EventoPacienteDTO>
-    {
-            new EventoPacienteDTO
-            {
-                EventoId = evento!.Id,
-                DiagnosticoPresuntivo = p.DiagnosticoPresuntivo
-            }
-    }
-        }).ToList();
-
         var dto = new EventoActualizarDTO
         {
             Id = evento!.Id,
@@ -506,9 +190,7 @@ else
             Telefono = evento.Telefono,
             FechaHora = evento.FechaHora,
             CausaId = evento.CausaId,
-            TipoEstadoId = evento.TipoEstadoId,
-            PacienteIds = idsAsociados,
-            Pacientes = nuevosParaCrear
+            TipoEstadoId = evento.TipoEstadoId
         };
 
         var respEvento = await Http.Put<EventoActualizarDTO, bool>($"api/evento/{Id}/pacienteEvento", dto);
@@ -518,161 +200,8 @@ else
             return;
         }
 
-        // Persistir datos personales de pacientes editados
-        foreach (var idEditado in pacientesEditados)
-        {
-            var paciente = pacienteact.FirstOrDefault(p => p.Id == idEditado);
-            if (paciente is null) continue;
-
-            var dtoActualizar = new PacienteActualizarDTO
-            {
-                Id = paciente.Id,
-                ObraSocial = paciente.ObraSocial,
-                PersonaDTO = new PersonaDTO
-                {
-                    Nombre = paciente.NombrePersona,
-                    DNI = paciente.DNIPersona,
-                    Direccion = paciente.DireccionPersona,
-                    Sexo = paciente.SexoPersona,
-                    Edad = paciente.EdadPersona
-                },
-                Eventos = new List<EventoPacienteDTO>()
-            };
-
-            var respPaciente = await Http.Put<PacienteActualizarDTO, bool>($"api/paciente/{paciente.Id}", dtoActualizar);
-            if (respPaciente.Error)
-            {
-                Mensaje = $"Error actualizando paciente {paciente.NombrePersona}: {respPaciente.ObtenerError()}";
-                return;
-            }
-        }
-
-        Nav.NavigateTo("/eventos", forceLoad: true);
-        pacientesNuevos.Clear();
-        pacientesEditados.Clear();
-        pacientesEliminados.Clear();
+        Nav.NavigateTo($"/eventos?vista={vista}", forceLoad: true);
     }
-
-
-
-
-
-    // AGREGAR PACIENTE NUEVO
-    private void GuardarPaciente()
-    {
-        var copia = new PacienteDiagPresuntivoDTO
-        {
-            NombrePersona = nuevoPaciente.NombrePersona,
-            DNIPersona = nuevoPaciente.DNIPersona,
-            DireccionPersona = nuevoPaciente.DireccionPersona,
-            SexoPersona = nuevoPaciente.SexoPersona,
-            EdadPersona = nuevoPaciente.EdadPersona,
-            ObraSocial = nuevoPaciente.ObraSocial
-        };
-
-        pacientesNuevos.Add(copia);
-        mostrarModalPaciente = false;
-        Mensaje = $"Paciente {copia.NombrePersona} agregado en memoria.";
-    }
-
-
-    // ABRIR MODAL DE EDICIÓN
-    private async Task AbrirModalEditarPaciente(int pacienteId)
-    {
-        var resp = await Http.Get<PacienteDTO>($"api/paciente/Id/{pacienteId}");
-        if (!resp.Error && resp.Respuesta is not null)
-        {
-            var p = resp.Respuesta;
-
-            pacienteEditar = new PacienteDiagPresuntivoDTO
-            {
-                Id = pacienteId, // ✅ asegurá el Id
-                ObraSocial = p.ObraSocial,
-                NombrePersona = p.PersonaDTO.Nombre,
-                DNIPersona = p.PersonaDTO.DNI,
-                DireccionPersona = p.PersonaDTO.Direccion,
-                SexoPersona = p.PersonaDTO.Sexo,
-                EdadPersona = p.PersonaDTO.Edad
-            };
-
-            mostrarModalEditar = true;
-        }
-        else
-        {
-            Mensaje = resp.ObtenerError();
-        }
-    }
-
-
-
-
-    // GUARDAR PACIENTE EDITADO
-    private void GuardarPacienteEditado()
-    {
-        if (pacienteEditar is null)
-        {
-            Mensaje = "No hay paciente para editar.";
-            return;
-        }
-
-        var idx = pacienteact.FindIndex(p => p.Id == pacienteEditar.Id);
-        if (idx == -1)
-        {
-            Mensaje = "No se encontró el paciente en la lista del evento.";
-            return;
-        }
-
-        // Actualizar en memoria los datos del paciente
-        pacienteact[idx] = pacienteEditar;
-
-        // Marcar como editado para persistir en BD después
-        if (!pacientesEditados.Contains(pacienteEditar.Id))
-            pacientesEditados.Add(pacienteEditar.Id);
-
-        mostrarModalEditar = false;
-        Mensaje = $"Paciente {pacienteEditar.NombrePersona} editado en memoria.";
-    }
-
-
-
-    // CERRAR MODAL DE EDICIÓN
-    private void CerrarModalEditar()
-    {
-        mostrarModalEditar = false;
-    }
-
-    // SOLICITAR CONFIRMACIÓN DE BORRADO
-  
-    private void SolicitarConfirmacionPaciente(PacienteDiagPresuntivoDTO paciente)
-    {
-        pacienteAEliminar = paciente;
-        mostrarModalConfirmacionPaciente = true;
-    }
-
-    private void CancelarConfirmacionPaciente()
-    {
-        pacienteAEliminar = null;
-        mostrarModalConfirmacionPaciente = false;
-    }
-
-    private void ConfirmarBorradoPaciente()
-    {
-        if (pacienteAEliminar is not null)
-        {
-            // Quitar de la lista en memoria
-            pacienteact.Remove(pacienteAEliminar);
-
-            // Marcar para desasociación del evento
-            if (!pacientesEliminados.Contains(pacienteAEliminar.Id))
-                pacientesEliminados.Add(pacienteAEliminar.Id);
-
-            Mensaje = $"Paciente {pacienteAEliminar.NombrePersona} marcado para eliminar del evento.";
-        }
-
-        pacienteAEliminar = null;
-        mostrarModalConfirmacionPaciente = false;
-    }
-
 
     private string GetCircleClass(ColorEvento color)
     {
@@ -687,4 +216,3 @@ else
         Nav.NavigateTo($"/eventos?vista={vista}");
     }
 }
- 
