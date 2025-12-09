@@ -200,8 +200,8 @@ else
         try
         {
             string endpoint = mostrarTodos
-               ? "api/evento/ListaEvento"
-               : "api/evento/ListaEventoReciente";
+               ? "api/evento/ListaEventoCompleto"
+               : "api/evento/ListaEventoRecienteCompleto";
 
             var resp = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>(endpoint);
 
@@ -239,7 +239,7 @@ else
 
         if (!response.Error)
         {
-            var evento = eventos.FirstOrDefault(e => e.Id == eventoId);
+            var evento = eventos!.FirstOrDefault(e => e.Id == eventoId);
             if (evento != null)
             {
                 var nuevoEstado = estadosDisponibles.FirstOrDefault(e => e.Id == estadoId);
