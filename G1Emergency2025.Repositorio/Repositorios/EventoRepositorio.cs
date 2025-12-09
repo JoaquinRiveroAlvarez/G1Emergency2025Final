@@ -54,17 +54,21 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 .Include(e => e.HistorialEventos)
                     .ThenInclude(h => h.Usuario)
                 .Where(e => e.Id == eventoId)
-                .Select(e => new EventoDiagPresuntivoListadoDTO
-                {
-                    Id = e.Id,
-                    Codigo = e.Codigo,
-                    colorEvento = e.colorEvento,
-                    Ubicacion = e.Ubicacion,
-                    Telefono = e.Telefono,
-                    FechaHora = e.FechaHora,
-                    Causa = e.Causa!.posibleCausa,
-                    TipoEstado = e.TipoEstados!.Tipo,
-                    TipoEstadoId = e.TipoEstadoId,
+               .Select(e => new EventoDiagPresuntivoListadoDTO
+               {
+                   Id = e.Id,
+                   Codigo = e.Codigo,
+                   Relato = e.Relato,
+                   colorEvento = e.colorEvento,
+                   Ubicacion = e.Ubicacion,
+                   Telefono = e.Telefono,
+                   FechaHora = e.FechaHora,
+                   CausaId = e.CausaId,
+                   Causa = e.Causa!.posibleCausa,
+                   TipoEstadoId = e.TipoEstadoId,
+                   TipoEstado = e.TipoEstados!.Tipo,
+                 
+
 
                     Pacientes = e.PacienteEventos
                         .Select(pe => new PacienteDiagPresuntivoDTO

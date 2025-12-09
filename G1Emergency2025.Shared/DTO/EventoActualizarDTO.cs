@@ -11,6 +11,7 @@ namespace G1Emergency2025.Shared.DTO
     public class EventoActualizarDTO
     {
         public int Id { get; set; }
+        public string Codigo { get; set; } = string.Empty;
         public string Relato { get; set; } = string.Empty;
 
         [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un color válido")]

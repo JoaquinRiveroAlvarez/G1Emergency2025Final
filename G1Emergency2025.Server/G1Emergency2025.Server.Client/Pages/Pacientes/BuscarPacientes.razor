@@ -1,0 +1,136 @@
+﻿@page "/pacientes/buscar"
+@inject IHttpServicio Http
+
+<h3 class="text-light">Buscar Pacientes</h3>
+
+<div class="row mb-3">
+    <div class="col-md-4">
+        <label class="form-label text-light">DNI</label>
+        <InputText class="form-control" @bind-Value="dni" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label text-light">Historia Clínica</label>
+        <InputText class="form-control" @bind-Value="historiaClinica" />
+    </div>
+    <div class="col-md-4">
+        <label class="form-label text-light">Nombre</label>
+        <InputText class="form-control" @bind-Value="nombre" />
+    </div>
+</div>
+
+<button class="btn btn-success" @onclick="Buscar">Buscar</button>
+
+@if (personaResultado is not null)
+{
+    <div class="card mt-4">
+        <div class="card-header">Paciente</div>
+        <div class="card-body">
+            <p><strong>Nombre:</strong> @personaResultado.Nombre</p>
+            <p><strong>DNI:</strong> @personaResultado.DNI</p>
+            <p><strong>Dirección:</strong> @personaResultado.Direccion</p>
+            <p><strong>Sexo:</strong> @personaResultado.Sexo</p>
+            <p><strong>Edad:</strong> @personaResultado.Edad</p>
+            
+        </div>
+    </div>
+}
+
+@if (eventosResultado is not null && eventosResultado.Any())
+{
+    <h5 class="text-light mt-4">Eventos asociados</h5>
+    <table class="table table-sm table-bordered text-dark">
+        <thead class="table-dark">
+            <tr>
+                <th>Evento</th>
+                <th>Paciente</th>
+                <th>DNI</th>
+                <th>Historia Clínica</th>
+                <th>Ubicación</th>
+                <th>Fecha</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in eventosResultado)
+            {
+                foreach (var p in ev.Pacientes)
+                {
+                    <tr>
+                        <td>@ev.Codigo</td>
+                        <td>@p.NombrePersona</td>
+                        <td>@p.DNIPersona</td>
+                        <td>@p.HistoriaClinica</td>
+                        <td>@ev.Ubicacion</td>
+                        <td>@ev.FechaHora.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <NavLink class="btn btn-sm btn-outline-dark" href="@($"/eventos/editar/{ev.Id}")">Abrir Evento</NavLink>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+else if (busquedaEjecutada && (eventosResultado is null || !eventosResultado.Any()) && personaResultado is null)
+{
+    <div class="alert alert-warning mt-3">No se encontraron resultados.</div>
+}
+
+@code {
+    string dni = "";
+    string historiaClinica = "";
+    string nombre = "";
+
+    PersonaDTO? personaResultado;
+    List<EventoDiagPresuntivoListadoDTO>? eventosResultado;
+    bool busquedaEjecutada = false;
+
+    private async Task Buscar()
+    {
+        busquedaEjecutada = true;
+        personaResultado = null;
+        eventosResultado = null;
+
+        // 1) Buscar por DNI -> PersonaRepositorio
+        if (!string.IsNullOrWhiteSpace(dni))
+        {
+            var respPersona = await Http.Get<PersonaDTO>($"api/persona/dni/{dni}");
+            if (!respPersona.Error && respPersona.Respuesta is not null)
+            {
+                personaResultado = respPersona.Respuesta;
+            }
+
+            // Si además tenés endpoint en EventoController para eventos por DNI
+            var respEventosPorDni = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>($"api/evento/buscarPorDni/{dni}");
+            if (!respEventosPorDni.Error && respEventosPorDni.Respuesta is not null)
+            {
+                eventosResultado = respEventosPorDni.Respuesta;
+            }
+
+            return;
+        }
+
+        // 2) Buscar por Historia Clínica -> EventoRepositorio
+        if (!string.IsNullOrWhiteSpace(historiaClinica))
+        {
+            var respHC = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>($"api/evento/buscarPorHistoriaClinica/{historiaClinica}");
+            if (!respHC.Error && respHC.Respuesta is not null)
+            {
+                eventosResultado = respHC.Respuesta;
+            }
+            return;
+        }
+
+        // 3) Buscar por Nombre -> EventoRepositorio
+        if (!string.IsNullOrWhiteSpace(nombre))
+        {
+            var respNombre = await Http.Get<List<EventoDiagPresuntivoListadoDTO>>($"api/evento/buscarPorNombre/{nombre}");
+            if (!respNombre.Error && respNombre.Respuesta is not null)
+            {
+                eventosResultado = respNombre.Respuesta;
+            }
+            return;
+        }
+    }
+
+    }
