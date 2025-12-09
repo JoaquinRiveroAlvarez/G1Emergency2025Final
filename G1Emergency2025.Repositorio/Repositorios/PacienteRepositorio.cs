@@ -287,8 +287,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
             using var transaction = await context.Database.BeginTransactionAsync();
             try
             {
-                // 1. Convertir Sexo
-                Sexo sexoConvertido = Enum.Parse<Sexo>(dto.Persona.Sexo);
 
                 // 2. Crear Persona
                 var persona = new Persona
@@ -297,7 +295,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     DNI = dto.Persona.DNI,
                     Legajo = dto.Persona.Legajo,
                     Direccion = dto.Persona.Direccion,
-                    Sexo = sexoConvertido,
+                    Sexo = dto.Persona.Sexo,
                     Edad = dto.Persona.Edad
                 };
                 await context.Persona.AddAsync(persona);

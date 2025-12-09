@@ -1128,14 +1128,13 @@ namespace G1Emergency2025.Repositorio.Repositorios
                     foreach (var pacienteDto in dto.Pacientes)
                     {
                         // Crear Persona
-                        Sexo sexoConvertido = Enum.Parse<Sexo>(pacienteDto.Persona.Sexo);
                         var persona = new Persona
                         {
                             Nombre = pacienteDto.Persona.Nombre,
                             DNI = pacienteDto.Persona.DNI,
                             Legajo = pacienteDto.Persona.Legajo,
                             Direccion = pacienteDto.Persona.Direccion,
-                            Sexo = sexoConvertido,
+                            Sexo = pacienteDto.Persona.Sexo,
                             Edad = pacienteDto.Persona.Edad
                         };
                         await context.Persona.AddAsync(persona);
@@ -1424,7 +1423,6 @@ namespace G1Emergency2025.Repositorio.Repositorios
                 {
                     foreach (var pacienteDto in dto.Pacientes)
                     {
-                        Sexo sexoConvertido = Enum.Parse<Sexo>(pacienteDto.Persona.Sexo);
 
                         var persona = new Persona
                         {
@@ -1432,7 +1430,7 @@ namespace G1Emergency2025.Repositorio.Repositorios
                             DNI = pacienteDto.Persona.DNI,
                             Legajo = pacienteDto.Persona.Legajo,
                             Direccion = pacienteDto.Persona.Direccion,
-                            Sexo = sexoConvertido,
+                            Sexo = pacienteDto.Persona.Sexo,
                             Edad = pacienteDto.Persona.Edad
                         };
                         await context.Persona.AddAsync(persona);

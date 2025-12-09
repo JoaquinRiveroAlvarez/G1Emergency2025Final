@@ -1,4 +1,4 @@
-﻿@* @using G1Emergency2025.Shared.Enum;
+﻿@using G1Emergency2025.Shared.Enum;
 @page "/eventos/editar/{Id:int}"
 @inject IHttpServicio Http
 @inject NavigationManager Nav
@@ -372,6 +372,7 @@ else
 <p>@Mensaje</p>
 
 @code {
+    [Parameter] public string vista { get; set; } = "recientes";
     [Parameter] public int Id { get; set; }
     private EventoActualizarDTO? evento;
     private List<CausaDTO> causas = new();
@@ -495,7 +496,15 @@ else
                 Direccion = p.DireccionPersona,
                 Sexo = p.SexoPersona,
                 Edad = p.EdadPersona
+            },
+                Eventos = new List<EventoPacienteDTO>
+    {
+            new EventoPacienteDTO
+            {
+                EventoId = evento!.Id,
+                DiagnosticoPresuntivo = p.DiagnosticoPresuntivo
             }
+    }
         }).ToList();
 
         var dto = new EventoActualizarDTO
@@ -677,7 +686,7 @@ else
 
     private string GetCircleClass(ColorEvento color)
     {
-        if (evento.colorEvento == color)
+        if (evento!.colorEvento == color)
             return "rounded-circle d-inline-block border border-3 border-white";
 
         return "rounded-circle d-inline-block border border-2 border-dark shadow";
@@ -685,7 +694,7 @@ else
 
     private void Volver()
     {
-        Nav.NavigateTo("/eventos");
+        Nav.NavigateTo($"/eventos?vista={vista}");
     }
 }
- *@
+ 

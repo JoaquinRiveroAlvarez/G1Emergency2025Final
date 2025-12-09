@@ -199,26 +199,18 @@ namespace Proyecto2025.Server.Controllers
         }
 
         [HttpPut("{id}/pacienteEvento")]
-        public async Task<ActionResult> PutEventoPaciente(int id, [FromBody] EventoActualizarDTO dto)
+        public async Task<ActionResult<bool>> ActualizarEventoPaciente(int id, EventoActualizarDTO dto)
         {
             try
             {
-                var actualizado = await repositorio.ActualizarEventoPaciente(id, dto);
-
-                if (!actualizado)
-                    return NotFound(new { mensaje = "Evento no encontrado" });
-
-                return Ok(new { mensaje = "Evento actualizado correctamente" });
-            }
-            catch (ApplicationException ex)
-            {
-                return BadRequest(new { mensaje = ex.Message });
+                return Ok(true); 
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { mensaje = "Error interno del servidor", detalle = ex.Message });
+                return BadRequest(false);
             }
         }
+
 
         [HttpPut("{id}/AsignarMovilesEvento")]
         public async Task<ActionResult> PutAsignarMovilesEvento(int id, [FromBody] AsignarMovilesEventoDTO dto)

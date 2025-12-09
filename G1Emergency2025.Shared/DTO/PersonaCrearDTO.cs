@@ -24,7 +24,7 @@ namespace G1Emergency2025.Shared.DTO
         public string Direccion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El Sexo es obligatorio.")]
-        public string Sexo { get; set; } = string.Empty;
+        public Sexo Sexo { get; set; }
 
         [Required(ErrorMessage = "La edad es obligatoria.")]
         [MaxLength(3, ErrorMessage = "La edad no puede exceder los 3 caracteres.")]
