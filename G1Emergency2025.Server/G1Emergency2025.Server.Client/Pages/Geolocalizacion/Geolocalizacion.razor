@@ -1,19 +1,17 @@
 ﻿@page "/geolocalizacion"
-@using G1Emergency2025.Servicio.ServiciosHttp
+@page "/geolocalizacion/{eventoId:int}"
+
 @using G1Emergency2025.Shared.DTO
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
-
-
 <h3>Geolocalización</h3>
 
+<div class="mt-3">
+    <button class="btn btn-secondary" @onclick="VolverAEvento">← Volver a Evento</button>
+</div>
 <div class="map-container">
     <img src="images/mapacordoba.jpg" class="map-image" />
-
-
-
-
 
     @foreach (var movil in moviles)
     {
@@ -21,7 +19,6 @@
         {
             <div class="ambulancia-icon"
                  style="top:@p.Top%; left:@p.Left%;"
-
                  @onclick="() => MostrarModal(movil)">
                 🚑
             </div>
@@ -41,44 +38,109 @@
                 <div class="modal-body">
                     <p><b>Tipo:</b> @movilSeleccionado.TipoMovil</p>
                     <p><b>Disponibilidad:</b> @movilSeleccionado.disponibilidadMovil</p>
-                    <p><b>Evento:</b> @movilSeleccionado.Eventos.FirstOrDefault()</p>
+
+                    @if (movilSeleccionado.disponibilidadMovil == DisponibilidadMovil.libre)
+                    {
+                        <button class="btn btn-primary mt-2" @onclick="() => AsignarMovil(movilSeleccionado.Id)">
+                            Asignar este móvil al evento
+                        </button>
+                    }
+                    else
+                    {
+                        <p class="text-muted mt-2">Este móvil no está disponible para asignar.</p>
+                    }
+
                 </div>
             </div>
         </div>
     </div>
 }
-<div class="mt-3">
-    <button class="btn btn-secondary" @onclick="VolverAEvento">← Volver a Evento</button>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <div class="alert alert-info mt-3">@mensaje</div>
+}
+
+
+
+<div class="contenedor-moviles mt-3">
+    <h5 class="titulo-moviles">Listado de Móviles</h5>
+    <ul class="list-group lista-moviles">
+        @foreach (var movil in moviles)
+        {
+            <li class="list-group-item py-1 px-2">
+                🚑 @movil.Patente - @movil.TipoMovil (@movil.disponibilidadMovil)
+            </li>
+        }
+    </ul>
 </div>
 
 
 @code {
-    private List<MovilListadoDTO> moviles = new()
-    {
-        new MovilListadoDTO {
-            Id = 1,
-            Patente = "ABC123",
-            TipoMovil = "Ambulancia",
-            disponibilidadMovil = DisponibilidadMovil.libre,
-            // Eventos = new List<string> { "Accidente en Av. Colón" }
-        },
-        new MovilListadoDTO {
-            Id = 2,
-            Patente = "XYZ789",
-            TipoMovil = "Ambulancia",
-            disponibilidadMovil = DisponibilidadMovil.enCaminoConPaciente,
-            // Eventos = new List<string> { "Traslado Hospital Clínicas" }
-        }
-    };
+    [Parameter]
+    public int eventoId { get; set; }
 
-    // Posiciones visuales independientes del DTO
-    private readonly Dictionary<int, Posicion> posiciones = new()
-    {
-        { 1, new Posicion { Top = 40, Left = 30 } },
-        { 2, new Posicion { Top = 65, Left = 55 } }
-    };
-
+    private List<MovilListadoDTO> moviles = new();
+    private Dictionary<int, Posicion> posiciones = new();
     private MovilListadoDTO? movilSeleccionado;
+    
+    private string mensaje = string.Empty;
+    private List<Posicion> coordenadasCordoba = new()
+{
+    new Posicion { Top = 28, Left = 42 }, // Hospital Córdoba
+    new Posicion { Top = 35, Left = 50 }, // Plaza San Martín
+    new Posicion { Top = 40, Left = 60 }, // Av. Colón
+    new Posicion { Top = 45, Left = 38 }, // Nueva Córdoba
+    new Posicion { Top = 32, Left = 55 }, // Barrio General Paz
+    new Posicion { Top = 50, Left = 48 }, // Ciudad Universitaria
+};
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var resultado = await Http.Get<List<MovilListadoDTO>>("api/Movil/ListaMovil");
+
+        if (!resultado.Error)
+        {
+            moviles = resultado.Respuesta ?? new List<MovilListadoDTO>();
+        }
+        else
+        {
+            mensaje = resultado.ObtenerError();
+            moviles = new List<MovilListadoDTO>();
+        }
+
+
+        for (int i = 0; i < moviles.Count; i++)
+        {
+            posiciones[moviles[i].Id] = coordenadasCordoba[i % coordenadasCordoba.Count];
+        }
+
+    }
+
+    private async Task AsignarMovil(int movilId)
+    {
+        var dto = new AsignarMovilesEventoDTO
+        {
+            MovilIds = new List<int> { movilId }
+        };
+
+        var response = await Http.Put<AsignarMovilesEventoDTO, object>(
+            $"api/evento/{eventoId}/AsignarMovilesEvento", dto);
+
+        if (!response.Error)
+        {
+            mensaje = "Móvil asignado correctamente";
+            Nav.NavigateTo($"/geolocalizacion/{eventoId}");
+        }
+
+        else
+        {
+            mensaje = response.ObtenerError();
+        }
+    }
+
 
     private void MostrarModal(MovilListadoDTO movil) => movilSeleccionado = movil;
     private void CerrarModal() => movilSeleccionado = null;
@@ -88,10 +150,8 @@
         public double Top { get; set; }
         public double Left { get; set; }
     }
-    private void VolverAEvento()
-    {
-        Nav.NavigateTo("/eventos");
-    }
+
+    private void VolverAEvento() => Nav.NavigateTo("/eventos");
+
 
 }
-

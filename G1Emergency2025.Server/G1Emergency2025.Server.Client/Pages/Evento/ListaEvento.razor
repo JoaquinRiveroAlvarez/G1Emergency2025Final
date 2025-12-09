@@ -83,7 +83,6 @@ else
                                 <span class="text-dark">–</span>
                             }
                         </td>
-
                         <td class="estado-col text-center align-middle">
                             @if (evento.TipoEstado == "Finalizado")
                             {
@@ -103,13 +102,20 @@ else
                             }
                         </td>
 
+
+
+
                         <td class="text-center" style="white-space:nowrap;">
                             <div class="btn-group">
                                 <button class="btn btn-sm btn-outline-light" title="Ver evento" @onclick="() => VerEventoPorCodigo(evento.Codigo)">📄</button>
                                 <button class="btn btn-sm btn-outline-light me-1" title="Editar" @onclick="() => Editar(evento.Id)">✏</button>
                                 <button class="btn btn-sm btn-outline-light me-1" title="Borrar" @onclick="() => SolicitarConfirmacion(evento)">🗑</button>
+                                <button class="btn btn-sm btn-outline-light me-1" title="Asignar Móvil" @onclick="() => AsignarMovil(evento.Id)">
+                                    🚑
+                                </button>
                             </div>
                         </td>
+
                     </tr>
                 }
             </tbody>
@@ -159,7 +165,6 @@ else
     EventoDiagPresuntivoListadoDTO? eventoAEliminar;
     bool mostrarModalConfirmacion = false;
 
-    // 🔹 Estados disponibles desde el backend
     List<TipoEstadoListadoDTO> estadosDisponibles = new();
 
     protected override async Task OnInitializedAsync()
@@ -181,7 +186,6 @@ else
         }
     }
 
-
     private async Task LeerEventos()
     {
         try
@@ -196,7 +200,6 @@ else
             {
                 eventos = resp.Respuesta ?? new List<EventoDiagPresuntivoListadoDTO>();
 
-                // 🔹 Filtrar: excluir los eventos finalizados
                 eventos = eventos
                     .Where(e => e.TipoEstado != "Finalizado")
                     .OrderBy(e =>
@@ -218,39 +221,24 @@ else
         }
     }
 
-    private async Task CambiarEstado(int eventoId, int nuevoEstadoId)
+    private async Task CambiarEstado(int eventoId, int estadoId)
     {
-        var dto = new ActualizarEstadoEventoDTO { TipoEstadoId = nuevoEstadoId };
+        var dto = new AsignarMovilesEventoDTO { Id = eventoId, EstadoId = estadoId };
 
-        var resp = await Http.Put<ActualizarEstadoEventoDTO, object>(
-            $"api/evento/{eventoId}/estadoEvento", dto);
+        var response = await Http.Put<AsignarMovilesEventoDTO, object>(
+            $"api/evento/{eventoId}/AsignarMovilesEvento", dto);
 
-        if (!resp.Error)
+        if (!response.Error)
         {
-            var eventoActual = eventos?.FirstOrDefault(e => e.Id == eventoId);
-            if (eventoActual is not null)
+            var evento = eventos.FirstOrDefault(e => e.Id == eventoId);
+            if (evento != null)
             {
-                eventoActual.TipoEstadoId = nuevoEstadoId;
-                var estado = estadosDisponibles.FirstOrDefault(e => e.Id == nuevoEstadoId);
-                if (estado != null)
-                {
-                    eventoActual.TipoEstado = estado.TipoEstado;
-                }
-
-                if (eventoActual.TipoEstado == "Finalizado")
-                {
-                    eventos!.Remove(eventoActual);
-                }
+                var nuevoEstado = estadosDisponibles.FirstOrDefault(e => e.Id == estadoId);
+                if (nuevoEstado != null)
+                    evento.TipoEstado = nuevoEstado.TipoEstado;
             }
-
-            StateHasChanged();
-        }
-        else
-        {
-            Mensaje = $"Error al cambiar estado: {resp.ObtenerError()}";
         }
     }
-
 
     private async Task AlternarVista()
     {
@@ -312,11 +300,13 @@ else
         Nav.NavigateTo("/geolocalizacion");
     }
 
-    
+    private void AsignarMovil(int eventoId)
+    {
+        Nav.NavigateTo($"/geolocalizacion/{eventoId}");
+    }
 
     private void VerEventoPorCodigo(string codigo)
     {
         Nav.NavigateTo($"/evento/codigo/{codigo}");
     }
-
 }

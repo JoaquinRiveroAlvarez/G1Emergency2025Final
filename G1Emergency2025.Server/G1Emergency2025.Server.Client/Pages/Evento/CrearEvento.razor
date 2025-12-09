@@ -327,6 +327,7 @@ else
         var copia = new PacienteCrearDTO
         {
             ObraSocial = nuevoPaciente.ObraSocial,
+            DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo, // 👈 se conserva
             Persona = new PersonaCrearDTO
             {
                 Nombre = nuevoPaciente.Persona.Nombre,
@@ -334,23 +335,16 @@ else
                 Direccion = nuevoPaciente.Persona.Direccion,
                 Sexo = nuevoPaciente.Persona.Sexo,
                 Edad = nuevoPaciente.Persona.Edad
-            },
-            Eventos = new List<EventoPacienteDTO>
-            {
-                 new EventoPacienteDTO
-                 {
-                      EventoId = 0, 
-                      DiagnosticoPresuntivo = nuevoPaciente.DiagnosticoPresuntivo
-                 }
             }
         };
 
-        // Agregamos el paciente al evento
-        evento.Pacientes.Add(copia);
+        evento.Pacientes.Add(copia); // 👈 se agrega al evento
 
         mostrarModalPaciente = false;
-        Mensaje = $"Paciente {copia.Persona.Nombre} agregado.";
+        Mensaje = $"Paciente {copia.Persona.Nombre} agregado con diagnóstico: {copia.DiagnosticoPresuntivo}.";
     }
+
+
 
 
     private void CerrarModal()

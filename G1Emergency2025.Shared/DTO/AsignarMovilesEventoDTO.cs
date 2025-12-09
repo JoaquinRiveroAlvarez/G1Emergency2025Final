@@ -12,5 +12,6 @@ namespace G1Emergency2025.Shared.DTO
     {
         public int Id { get; set; }
         public List<int> MovilIds { get; set; } = new();
+        public int? EstadoId { get; set; }//Emilse
     }
 }

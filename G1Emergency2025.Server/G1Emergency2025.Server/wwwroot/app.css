@@ -385,3 +385,27 @@ tr.bg-primary td {
     padding: 0.25rem;
     white-space: nowrap;
 }
+.contenedor-moviles {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 8px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+
+.titulo-moviles {
+    font-size: 1.1rem;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.lista-moviles .list-group-item {
+    font-size: 0.9rem;
+    border: none;
+    border-bottom: 1px solid #eee;
+}
+.volver-evento {
+    text-align: left;
+    padding-left: 10px;
+}
