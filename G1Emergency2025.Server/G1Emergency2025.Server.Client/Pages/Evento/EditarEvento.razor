@@ -3,7 +3,7 @@
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
-<h3 class="text-light">Editar Evento (@evento.Codigo)</h3>
+<h3 class="text-light">Editar Evento @evento?.Codigo</h3>
 
 @if (cargando)
 {
@@ -75,18 +75,7 @@ else
                 <ValidationMessage For="@(() => evento.colorEvento)" />
             </div>
 
-            <div class="col-md-4">
-                <label class="form-label text-light">Causa</label>
-                <InputSelect class="form-control" @bind-Value="evento.CausaId">
-                    <option value="0">-- Seleccionar causa --</option>
-                    @foreach (var c in causas)
-                    {
-                        <option value="@c.Id">@($"{c.Codigo} - {c.posibleCausa}")</option>
-                    }
-                </InputSelect>
-                <ValidationMessage For="@(() => evento.CausaId)" />
-            </div>
-
+            
             <div class="col-md-4">
                 <label class="form-label text-light">Estado</label>
                 <InputSelect class="form-control" @bind-Value="evento.TipoEstadoId">
