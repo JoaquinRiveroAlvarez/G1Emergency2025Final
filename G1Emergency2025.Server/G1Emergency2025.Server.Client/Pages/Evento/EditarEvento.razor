@@ -3,7 +3,7 @@
 @inject IHttpServicio Http
 @inject NavigationManager Nav
 
-<h3 class="text-light">Editar Evento </h3>
+<h3 class="text-light">Editar Evento (@evento.Codigo)</h3>
 
 @if (cargando)
 {
@@ -425,6 +425,7 @@ else
                 evento = new EventoActualizarDTO
                 {
                     Id = e.Id,
+                    Codigo = e.Codigo,
                     Relato = e.Relato,
                     colorEvento = e.colorEvento,
                     Ubicacion = e.Ubicacion,
